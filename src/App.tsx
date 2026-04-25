@@ -13,7 +13,8 @@ import {
   Zap,
   LayoutDashboard,
   Activity,
-  Share2
+  Share2,
+  Search
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -41,6 +42,7 @@ const STATE_CONFIGS: Record<string, {
   majority: number;
   parties: any[];
   regions: { id: string; label: string; total: number; partySeats?: Record<string, number> }[];
+  constituencies?: { id: string; name: string; type: 'Star' | 'Swing' | 'Safe'; leading: string; margin: string; candidate: string; history?: number[] }[];
   trendData: any[];
   pollData: {
     prePoll: Record<string, number>;
@@ -74,6 +76,13 @@ const STATE_CONFIGS: Record<string, {
       { id: 'delta', label: 'Kaveri Delta', total: 32, partySeats: { dmk: 26, aiadmk: 4, tvk: 2 } },
       { id: 'south', label: 'Deep South', total: 60, partySeats: { dmk: 38, aiadmk: 12, tvk: 6, others: 4 } },
       { id: 'north', label: 'Vanniyar Belt', total: 60, partySeats: { dmk: 34, aiadmk: 6, tvk: 6, bjp: 6, ntk: 4, others: 4 } },
+    ],
+    constituencies: [
+      { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', history: [12000, 14000, 15000] },
+      { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', history: [40000, 42000, 45000] },
+      { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', history: [1000, 3000, 5000] },
+      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'BJP', margin: '1,200+', candidate: 'Vanathi Srinivasan', history: [2500, 1800, 1200] },
+      { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
     ],
     parties: [
       { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0 },
@@ -117,6 +126,12 @@ const STATE_CONFIGS: Record<string, {
       { id: 'north', label: 'North Bengal', total: 54, partySeats: { tmc: 20, bjp: 30, left: 4 } },
       { id: 'south', label: 'South Bengal', total: 240, partySeats: { tmc: 145, bjp: 65, left: 26, others: 4 } },
     ],
+    constituencies: [
+      { id: 'nandigram', name: 'Nandigram', type: 'Star', leading: 'BJP', margin: '1,500+', candidate: 'Suvendu Adhikari', history: [4000, 2500, 1500] },
+      { id: 'bhawanipore', name: 'Bhawanipore', type: 'Safe', leading: 'TMC', margin: '50,000+', candidate: 'Mamata Banerjee', history: [45000, 48000, 50000] },
+      { id: 'diamond-harbour', name: 'Diamond Harbour', type: 'Safe', leading: 'TMC', margin: '40,000+', candidate: 'Abhishek Banerjee', history: [35000, 38000, 40000] },
+      { id: 'singur', name: 'Singur', type: 'Swing', leading: 'TMC', margin: '5,000+', candidate: 'Bechara Manna', history: [2000, 3500, 5000] },
+    ],
     parties: [
       { id: 'tmc', name: 'AITC/TMC', color: '#31a354', seats: 165, voteShare: 45.2, momentum: 0 },
       { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 95, voteShare: 36.8, momentum: 0 },
@@ -157,6 +172,11 @@ const STATE_CONFIGS: Record<string, {
       { id: 'brahmaputra', label: 'Brahmaputra Valley', total: 111, partySeats: { bjp: 65, congress: 38, aiudf: 7, others: 1 } },
       { id: 'barak', label: 'Barak Valley', total: 15, partySeats: { bjp: 10, congress: 4, aiudf: 1 } },
     ],
+    constituencies: [
+      { id: 'jalukbari', name: 'Jalukbari', type: 'Safe', leading: 'BJP', margin: '100,000+', candidate: 'Himanta Biswa Sarma', history: [90000, 95000, 100000] },
+      { id: 'majuli', name: 'Majuli', type: 'Star', leading: 'BJP', margin: '20,000+', candidate: 'Bhuban Gam', history: [15000, 18000, 20000] },
+      { id: 'titabar', name: 'Titabar', type: 'Safe', leading: 'Congress', margin: '15,000+', candidate: 'Bhaskar Jyoti Baruah', history: [12000, 14000, 15000] },
+    ],
     parties: [
       { id: 'bjp', name: 'BJP+', color: '#FF9933', seats: 75, voteShare: 44.5, momentum: 0 },
       { id: 'congress', name: 'Congress+', color: '#de2d26', seats: 42, voteShare: 35.2, momentum: 0 },
@@ -188,13 +208,24 @@ export default function App() {
   const [activeRegion, setActiveRegion] = useState('all');
   const [stateData, setStateData] = useState(STATE_CONFIGS[selectedStateId]);
   const [showDeepDive, setShowDeepDive] = useState(false);
+  const [selectedConstituencyId, setSelectedConstituencyId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showSources, setShowSources] = useState(false);
 
   // Sync state data when selection changes
   useEffect(() => {
     setStateData(STATE_CONFIGS[selectedStateId]);
     setActiveRegion('all');
+    setSelectedConstituencyId(null);
+    setSearchTerm('');
   }, [selectedStateId]);
+
+  const handleOpenDeepDive = (constituencyId?: string) => {
+    if (constituencyId) {
+      setSelectedConstituencyId(constituencyId);
+    }
+    setShowDeepDive(true);
+  };
 
   const handleMomentumChange = (id: string, value: number) => {
     setStateData(prev => {
@@ -243,9 +274,9 @@ export default function App() {
               <span className="text-[10px] uppercase tracking-[0.3em] text-brand-text/40 mb-4 block">Strategic Depth</span>
               <h2 className="text-4xl font-serif italic mb-12">Constituency Analysis.</h2>
               
-              <div className="grid md:grid-cols-2 gap-12">
-                <div className="space-y-8">
-                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-brand-text/5 pb-2">The Multi-Polar Shift</h4>
+              <div className="grid md:grid-cols-12 gap-12">
+                <div className="md:col-span-4 space-y-8">
+                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-brand-text/5 pb-2">Strategic Depth</h4>
                   <p className="text-sm leading-relaxed text-brand-text/70 italic">
                     {stateData.description || 'Global shift in the electoral landscape is transitioning towards a newer multi-polar contest.'}
                   </p>
@@ -260,9 +291,8 @@ export default function App() {
                       <span className="font-bold">HIGH / 18.4%</span>
                     </div>
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-widest">Regional Dynamics</h4>
+
+                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-brand-text/5 pb-2 mt-8">Regional Dynamics</h4>
                   {stateData.regions.slice(1).map((r: any) => (
                     <div key={r.id} className="p-4 border border-brand-text/5 hover:border-brand-text/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
@@ -274,6 +304,141 @@ export default function App() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="md:col-span-8 space-y-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-brand-text/5 pb-4 gap-4">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-widest">Star & Swing Constituencies</h4>
+                      <span className="text-[10px] text-brand-text/40 uppercase tracking-widest">{stateData.constituencies?.length || 0} Key Battles</span>
+                    </div>
+                    
+                    <div className="relative w-full md:w-64">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/30" />
+                      <input 
+                        type="text"
+                        placeholder="SEARCH CONSTITUENCY..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-brand-text/5 border border-brand-text/10 px-9 py-2 text-[10px] uppercase tracking-widest focus:outline-none focus:border-brand-accent transition-colors"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                    {stateData.constituencies?.filter(c => 
+                      c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                      c.candidate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      c.leading.toLowerCase().includes(searchTerm.toLowerCase())
+                    ).map((c) => (
+                      <div 
+                        key={c.id} 
+                        onClick={() => setSelectedConstituencyId(c.id)}
+                        className={`p-5 border transition-all cursor-pointer group relative ${
+                          selectedConstituencyId === c.id ? 'bg-brand-accent/5 border-brand-accent ring-1 ring-brand-accent' : 'bg-white border-brand-text/10 hover:border-brand-accent'
+                        }`}
+                      >
+                        {selectedConstituencyId === c.id && (
+                          <div className="absolute -top-2 -right-2 bg-brand-accent text-white p-1 rounded-full shadow-lg">
+                            <Info size={12} />
+                          </div>
+                        )}
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h5 className="text-[10px] uppercase tracking-widest text-brand-text/40 mb-1">{c.type} SEAT</h5>
+                            <h3 className="text-lg font-serif italic">{c.name}</h3>
+                          </div>
+                          <span className={`text-[8px] font-bold px-2 py-1 uppercase tracking-widest ${
+                            c.type === 'Star' ? 'bg-brand-accent text-white' : 
+                            c.type === 'Swing' ? 'bg-orange-100 text-orange-700' : 
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {c.type}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {c.history && (
+                            <div className="h-10 w-full bg-brand-text/5 -mx-5 px-5 py-1 mb-4 flex items-center justify-between">
+                              <span className="text-[8px] uppercase tracking-widest text-brand-text/30">3M Trend</span>
+                              <div className="h-full w-24">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={c.history.map((val, i) => ({ val, i }))}>
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey="val" 
+                                      stroke={stateData.parties.find(p => p.id === c.leading.toLowerCase() || p.name.includes(c.leading))?.color || '#000'} 
+                                      strokeWidth={1.5} 
+                                      dot={false}
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] uppercase text-brand-text/40">Candidate</span>
+                            <span className="text-xs font-bold">{c.candidate}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] uppercase text-brand-text/40">Leading</span>
+                            <span className="text-xs font-serif italic text-brand-accent">{c.leading}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] uppercase text-brand-text/40">Est. Margin</span>
+                            <span className="text-[10px] font-mono">{c.margin}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {selectedConstituencyId && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-8 p-8 border border-brand-accent/20 bg-brand-accent/5"
+                    >
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <h4 className="text-[10px] uppercase tracking-widest text-brand-accent font-bold mb-1">Deep Analysis</h4>
+                          <h3 className="text-2xl font-serif italic">
+                            {stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.name} Detail.
+                          </h3>
+                        </div>
+                        <button onClick={() => setSelectedConstituencyId(null)} className="text-[9px] uppercase font-bold text-brand-text/40 hover:text-brand-text">Clear Select</button>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div>
+                          <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Primary Variable</span>
+                          <span className="text-xs font-bold">Voter Turnout</span>
+                        </div>
+                        <div>
+                          <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Caste Alignment</span>
+                          <span className="text-xs font-bold">Favorable</span>
+                        </div>
+                        <div>
+                          <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Welfare Impact</span>
+                          <span className="text-xs font-bold">High (3.8/5)</span>
+                        </div>
+                        <div>
+                          <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Last Margin</span>
+                          <span className="text-xs font-bold text-brand-accent">2.4% Swing</span>
+                        </div>
+                      </div>
+                      <p className="mt-8 text-[11px] leading-relaxed italic text-brand-text/70">
+                        {selectedConstituencyId === 'nandigram' ? 'Nandigram is the epicenter of the 2026 contest, where the polarization of the rural vote and the performance of independent candidates will be decisive.' : 
+                         selectedConstituencyId === 'rk-nagar' ? 'RK Nagar remains a urban lighthouse for the Dravidian movement, with high institutional memory favoring the incumbent base.' :
+                         'This constituency represents a critical junction in the current electoral simulation, showing signs of significant demographic shift towards the leading party.'}
+                      </p>
+                    </motion.div>
+                  )}
+                  
+                  <div className="mt-8 p-6 bg-brand-accent/5 border border-brand-accent/10">
+                    <p className="text-[10px] text-brand-text/60 italic leading-relaxed">
+                      * Star constituencies are defined by high-profile candidates or historical significance. Swing seats have a victory margin of less than 5% in previous elections. Detailed margin figures are simulations based on multi-poll weights.
+                    </p>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -371,6 +536,10 @@ export default function App() {
             </button>
           </div>
         <div className="flex items-center gap-4">
+          <div className="hidden xl:flex flex-col items-end mr-2 text-right">
+            <span className="text-[7px] text-brand-text/30 uppercase tracking-[0.2em] font-bold">Polls & Social Media Stream</span>
+            <span className="text-[8px] text-brand-text/50 font-mono">Synced: {new Date().toLocaleDateString('en-IN')} {new Date().getHours()}:00</span>
+          </div>
           <div className="hidden lg:flex px-4 py-2 border border-brand-text/10 rounded-full text-[9px] tracking-widest uppercase items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             Live Projections Active
@@ -575,6 +744,39 @@ export default function App() {
                               <h4 className="text-[10px] uppercase tracking-widest text-brand-text/40">{trend.platform}</h4>
                               <p className="text-xl font-serif italic">{trend.mentions}</p>
                               <p className="text-[10px] font-mono text-brand-accent mt-2">{trend.trendingTopic}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Constituency Highlights - new section */}
+                    <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                      <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-2">
+                          <Users size={16} />
+                          <h3 className="text-xs font-bold uppercase tracking-wider">Constituency Analysis Highlights</h3>
+                        </div>
+                        <button 
+                          onClick={() => setShowDeepDive(true)}
+                          className="text-[9px] uppercase tracking-widest font-bold text-brand-accent border-b border-brand-accent pb-0.5"
+                        >
+                          Full Breakdown
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {stateData.constituencies?.slice(0, 4).map((c) => (
+                          <div key={c.id} className="p-4 border border-brand-text/5 bg-brand-bg/10 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors" onClick={() => handleOpenDeepDive(c.id)}>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[8px] uppercase font-bold text-brand-accent">{c.type}</span>
+                                <h4 className="text-sm font-bold">{c.name}</h4>
+                              </div>
+                              <p className="text-[10px] text-brand-text/40 italic">{c.candidate}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] font-serif italic block text-brand-text leading-none">{c.leading}</span>
+                              <span className="text-[8px] uppercase tracking-tighter text-brand-text/30 font-mono">+{c.margin}</span>
                             </div>
                           </div>
                         ))}
@@ -822,7 +1024,7 @@ export default function App() {
           
           <div className="flex gap-2">
             <button 
-              onClick={() => setShowDeepDive(true)}
+              onClick={() => handleOpenDeepDive()}
               className="px-6 h-10 bg-brand-text text-brand-bg text-[9px] tracking-[0.2em] uppercase font-bold flex items-center gap-2 hover:bg-brand-text/90 transition-all active:scale-95"
             >
               <TrendingUp size={12} />
