@@ -11,7 +11,9 @@ import {
   Users, 
   Map as MapIcon,
   Zap,
-  LayoutDashboard
+  LayoutDashboard,
+  Activity,
+  Share2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -23,7 +25,10 @@ import {
   ResponsiveContainer, 
   Cell,
   PieChart as RePieChart,
-  Pie
+  Pie,
+  Legend,
+  LineChart,
+  Line
 } from 'recharts';
 
 const STATE_CONFIGS: Record<string, {
@@ -35,13 +40,20 @@ const STATE_CONFIGS: Record<string, {
   totalSeats: number;
   majority: number;
   parties: any[];
-  regions: any[];
+  regions: { id: string; label: string; total: number; partySeats?: Record<string, number> }[];
   trendData: any[];
   pollData: {
     prePoll: Record<string, number>;
     postPoll: Record<string, number>;
     exitPoll: Record<string, number>;
   };
+  socialTrends: {
+    platform: string;
+    mentions: string;
+    sentiment: 'Positive' | 'Negative' | 'Neutral';
+    trendingTopic: string;
+    icon: any;
+  }[];
 }> = {
   tamilnadu: {
     name: 'Tamil Nadu',
@@ -57,11 +69,11 @@ const STATE_CONFIGS: Record<string, {
     majority: 118,
     regions: [
       { id: 'all', label: 'All Regions', total: 234 },
-      { id: 'kongu', label: 'Kongu / West', total: 54 },
-      { id: 'chennai', label: 'Greater Chennai', total: 28 },
-      { id: 'delta', label: 'Kaveri Delta', total: 32 },
-      { id: 'south', label: 'Deep South', total: 60 },
-      { id: 'north', label: 'Vanniyar Belt', total: 60 },
+      { id: 'kongu', label: 'Kongu / West', total: 54, partySeats: { dmk: 30, aiadmk: 18, tvk: 2, bjp: 4 } },
+      { id: 'chennai', label: 'Greater Chennai', total: 28, partySeats: { dmk: 24, aiadmk: 2, tvk: 2 } },
+      { id: 'delta', label: 'Kaveri Delta', total: 32, partySeats: { dmk: 26, aiadmk: 4, tvk: 2 } },
+      { id: 'south', label: 'Deep South', total: 60, partySeats: { dmk: 38, aiadmk: 12, tvk: 6, others: 4 } },
+      { id: 'north', label: 'Vanniyar Belt', total: 60, partySeats: { dmk: 34, aiadmk: 6, tvk: 6, bjp: 6, ntk: 4, others: 4 } },
     ],
     parties: [
       { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0 },
@@ -81,7 +93,12 @@ const STATE_CONFIGS: Record<string, {
       prePoll: { dmk: 154, aiadmk: 40, tvk: 15, bjp: 12 },
       postPoll: { dmk: 148, aiadmk: 46, tvk: 22, bjp: 8 },
       exitPoll: { dmk: 156, aiadmk: 38, tvk: 18, bjp: 10 },
-    }
+    },
+    socialTrends: [
+      { platform: 'X / Twitter', mentions: '1.2M', sentiment: 'Positive', trendingTopic: '#DMKVictory2026', icon: Zap },
+      { platform: 'Instagram', mentions: '850K', sentiment: 'Neutral', trendingTopic: '#TVKEntry', icon: Share2 },
+      { platform: 'Facebook', mentions: '2.5M', sentiment: 'Positive', trendingTopic: 'Welfare Schemes', icon: Users },
+    ]
   },
   westbengal: {
     name: 'West Bengal',
@@ -97,8 +114,8 @@ const STATE_CONFIGS: Record<string, {
     majority: 148,
     regions: [
       { id: 'all', label: 'Entire State', total: 294 },
-      { id: 'north', label: 'North Bengal', total: 54 },
-      { id: 'south', label: 'South Bengal', total: 240 },
+      { id: 'north', label: 'North Bengal', total: 54, partySeats: { tmc: 20, bjp: 30, left: 4 } },
+      { id: 'south', label: 'South Bengal', total: 240, partySeats: { tmc: 145, bjp: 65, left: 26, others: 4 } },
     ],
     parties: [
       { id: 'tmc', name: 'AITC/TMC', color: '#31a354', seats: 165, voteShare: 45.2, momentum: 0 },
@@ -116,7 +133,12 @@ const STATE_CONFIGS: Record<string, {
       prePoll: { tmc: 162, bjp: 100, left: 28 },
       postPoll: { tmc: 168, bjp: 92, left: 32 },
       exitPoll: { tmc: 165, bjp: 94, left: 31 },
-    }
+    },
+    socialTrends: [
+      { platform: 'X / Twitter', mentions: '2.1M', sentiment: 'Neutral', trendingTopic: '#BengalMandate', icon: Zap },
+      { platform: 'Instagram', mentions: '1.5M', sentiment: 'Positive', trendingTopic: '#DidiAche', icon: Share2 },
+      { platform: 'Facebook', mentions: '4.2M', sentiment: 'Neutral', trendingTopic: 'Rural Connectivity', icon: Users },
+    ]
   },
   assam: {
     name: 'Assam',
@@ -132,8 +154,8 @@ const STATE_CONFIGS: Record<string, {
     majority: 64,
     regions: [
       { id: 'all', label: 'All Regions', total: 126 },
-      { id: 'brahmaputra', label: 'Brahmaputra Valley', total: 111 },
-      { id: 'barak', label: 'Barak Valley', total: 15 },
+      { id: 'brahmaputra', label: 'Brahmaputra Valley', total: 111, partySeats: { bjp: 65, congress: 38, aiudf: 7, others: 1 } },
+      { id: 'barak', label: 'Barak Valley', total: 15, partySeats: { bjp: 10, congress: 4, aiudf: 1 } },
     ],
     parties: [
       { id: 'bjp', name: 'BJP+', color: '#FF9933', seats: 75, voteShare: 44.5, momentum: 0 },
@@ -151,7 +173,12 @@ const STATE_CONFIGS: Record<string, {
       prePoll: { bjp: 78, congress: 40, aiudf: 7 },
       postPoll: { bjp: 72, congress: 45, aiudf: 9 },
       exitPoll: { bjp: 75, congress: 42, aiudf: 8 },
-    }
+    },
+    socialTrends: [
+      { platform: 'X / Twitter', mentions: '600K', sentiment: 'Positive', trendingTopic: '#NortheastFirst', icon: Zap },
+      { platform: 'Instagram', mentions: '400K', sentiment: 'Neutral', trendingTopic: '#Assam2026', icon: Share2 },
+      { platform: 'Facebook', mentions: '1.8M', sentiment: 'Positive', trendingTopic: 'Tribal Progress', icon: Users },
+    ]
   }
 };
 
@@ -308,53 +335,41 @@ export default function App() {
 
       {/* Top Navigation Bar */}
       <nav className="sticky top-0 w-full h-16 md:h-20 px-4 md:px-12 flex items-center justify-between border-b border-brand-text/5 z-50 bg-brand-bg/90 backdrop-blur-md">
-        <div className="flex items-center gap-4 md:gap-8">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => setActiveTab('overview')}
-          >
-            <Vote className="text-brand-text" size={24} />
-            <div className="flex flex-col -space-y-1">
-              <span className="font-serif italic text-xl md:text-2xl tracking-tighter">India2026.</span>
-              <span className="text-[7px] uppercase tracking-widest text-brand-text/30 font-bold">Educational Simulation</span>
-            </div>
-          </motion.div>
-          <div className="hidden sm:block h-4 w-[1px] bg-brand-text/10" />
-          <div className="flex gap-2">
-            {Object.entries(STATE_CONFIGS).map(([id, config]) => (
-              <button
-                key={id}
-                onClick={() => setSelectedStateId(id)}
-                className={`px-3 py-1 text-[9px] uppercase tracking-widest font-bold transition-all ${selectedStateId === id ? 'bg-brand-text text-brand-bg' : 'text-brand-text/40 hover:text-brand-text/60'}`}
-              >
-                {config.name.split(' ')[0]}
-              </button>
-            ))}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => setActiveTab('overview')}
+        >
+          <Vote className="text-brand-text" size={24} />
+          <div className="flex flex-col -space-y-1">
+            <span className="font-serif italic text-xl md:text-2xl tracking-tighter">India2026.</span>
+            <span className="text-[7px] uppercase tracking-widest text-brand-text/30 font-bold">Educational Simulation</span>
           </div>
-          <div className="hidden sm:block h-4 w-[1px] bg-brand-text/10" />
-          <div className="flex gap-4 md:gap-6 text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-medium">
+        </motion.div>
+          <div className="flex gap-4 md:gap-8 text-[9px] md:text-[11px] uppercase tracking-[0.2em] font-bold">
             <button 
               onClick={() => setActiveTab('overview')}
-              className={`cursor-pointer transition-all duration-300 ${activeTab === 'overview' ? 'text-brand-text border-b border-brand-text' : 'text-brand-text/40 hover:text-brand-text/70'}`}
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${activeTab === 'overview' ? 'text-brand-text' : 'text-brand-text/30 hover:text-brand-text/60'}`}
             >
-              Overview
+              <LayoutDashboard size={14} className="md:hidden" />
+              <span className="hidden md:inline">Overview</span>
             </button>
             <button 
               onClick={() => setActiveTab('simulator')}
-              className={`cursor-pointer transition-all duration-300 ${activeTab === 'simulator' ? 'text-brand-text border-b border-brand-text' : 'text-brand-text/40 hover:text-brand-text/70'}`}
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${activeTab === 'simulator' ? 'text-brand-text' : 'text-brand-text/30 hover:text-brand-text/60'}`}
             >
-              Simulator
+              <Activity size={14} className="md:hidden" />
+              <span className="hidden md:inline">Simulator</span>
             </button>
             <button 
               onClick={() => setActiveTab('trends')}
-              className={`cursor-pointer transition-all duration-300 ${activeTab === 'trends' ? 'text-brand-text border-b border-brand-text' : 'text-brand-text/40 hover:text-brand-text/70'}`}
+              className={`flex items-center gap-2 cursor-pointer transition-all duration-300 ${activeTab === 'trends' ? 'text-brand-text' : 'text-brand-text/30 hover:text-brand-text/60'}`}
             >
-              Trends
+              <TrendingUp size={14} className="md:hidden" />
+              <span className="hidden md:inline">Trends</span>
             </button>
           </div>
-        </div>
         <div className="flex items-center gap-4">
           <div className="hidden lg:flex px-4 py-2 border border-brand-text/10 rounded-full text-[9px] tracking-widest uppercase items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -366,9 +381,49 @@ export default function App() {
         </div>
       </nav>
 
+      {/* Territory Selection Bar */}
+      <div className="w-full bg-white border-b border-brand-text/5 px-4 md:px-12 py-3 md:py-4 flex items-center justify-center overflow-x-auto gap-4 md:gap-8 sticky top-16 md:top-20 z-40 backdrop-blur-sm bg-white/80">
+        <span className="text-[9px] uppercase tracking-[0.2em] text-brand-text/30 font-bold whitespace-nowrap">Switch Territory:</span>
+        <div className="flex items-center gap-4 md:gap-10">
+          {Object.entries(STATE_CONFIGS).map(([id, config]) => (
+            <button
+              key={id}
+              onClick={() => setSelectedStateId(id)}
+              className={`text-[10px] md:text-[11px] uppercase font-bold tracking-widest transition-all relative py-1 flex items-center gap-2 ${
+                selectedStateId === id ? 'text-brand-text' : 'text-brand-text/30 hover:text-brand-text'
+              }`}
+            >
+              <div className={`w-1 h-1 rounded-full ${selectedStateId === id ? 'bg-brand-accent' : 'bg-transparent'}`} />
+              {config.name}
+              {selectedStateId === id && (
+                <motion.div 
+                  layoutId="activeStateUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-[2px] bg-brand-accent"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar / Filter Panel */}
         <aside className="hidden lg:block lg:sticky lg:top-32 w-64 p-12 z-40 h-fit">
+          <div className="mb-12">
+            <h3 className="text-[9px] uppercase tracking-[0.3em] text-brand-text/40 mb-6 border-b border-brand-text/5 pb-2">Territory Index</h3>
+            <ul className="space-y-3">
+              {Object.entries(STATE_CONFIGS).map(([id, config]) => (
+                <li 
+                  key={id}
+                  onClick={() => setSelectedStateId(id)}
+                  className={`text-[10px] uppercase font-bold tracking-widest cursor-pointer transition-colors ${selectedStateId === id ? 'text-brand-accent' : 'text-brand-text/40 hover:text-brand-text'}`}
+                >
+                  {config.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <h3 className="text-[9px] uppercase tracking-[0.3em] text-brand-text/40 mb-8 border-b border-brand-text/5 pb-2">Regional Filter</h3>
           <ul className="space-y-8">
             {stateData.regions.map((region: any, i: number) => (
@@ -458,6 +513,74 @@ export default function App() {
                       </p>
                     </div>
 
+                    {/* regional party split - new section */}
+                    <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                      <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-2">
+                          <MapIcon size={16} />
+                          <h3 className="text-xs font-bold uppercase tracking-wider">Regional Party Split</h3>
+                        </div>
+                      </div>
+                      <div className="h-[400px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart 
+                            layout="vertical"
+                            data={stateData.regions.slice(1).map(region => ({
+                              name: region.label,
+                              ...region.partySeats
+                            }))} 
+                            margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" width={80} axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#666' }} />
+                            <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ fontSize: '10px', borderRadius: '0px' }} />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: '9px', paddingTop: '20px' }} />
+                            {stateData.parties.map(party => (
+                              <Bar 
+                                key={party.id} 
+                                dataKey={party.id} 
+                                stackId="a" 
+                                fill={party.color} 
+                                name={party.name}
+                                radius={0}
+                              />
+                            ))}
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Social Media Pulse - new section */}
+                    <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                      <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-2">
+                          <Activity size={16} />
+                          <h3 className="text-xs font-bold uppercase tracking-wider">Social Media Pulse</h3>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {stateData.socialTrends.map((trend, idx) => (
+                          <div key={idx} className="p-4 bg-brand-text/5 border border-brand-text/5 hover:border-brand-accent/20 transition-all group">
+                            <div className="flex justify-between items-start mb-4">
+                              <trend.icon size={20} className="text-brand-text/40 group-hover:text-brand-accent transition-colors" />
+                              <span className={`text-[8px] uppercase font-bold px-2 py-1 ${
+                                trend.sentiment === 'Positive' ? 'bg-green-100 text-green-700' : 
+                                trend.sentiment === 'Negative' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {trend.sentiment}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-[10px] uppercase tracking-widest text-brand-text/40">{trend.platform}</h4>
+                              <p className="text-xl font-serif italic">{trend.mentions}</p>
+                              <p className="text-[10px] font-mono text-brand-accent mt-2">{trend.trendingTopic}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Main Chart */}
                     <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
                       <div className="flex justify-between items-center mb-8">
@@ -492,27 +615,40 @@ export default function App() {
                     <div className="bg-brand-text text-brand-bg p-8 flex flex-col items-center">
                       <div className="w-full flex justify-between items-start mb-6">
                         <TrendingUp size={16} className="opacity-40" />
-                        <span className="text-[9px] tracking-widest opacity-40 uppercase">Aggregate Forecast</span>
+                        <span className="text-[9px] tracking-widest opacity-40 uppercase">Consolidated Election Forecast</span>
                       </div>
                       <div className="text-center py-4">
-                        <h4 className="text-5xl font-serif italic mb-2">
+                        <span className="text-[10px] uppercase font-bold opacity-40 tracking-widest block mb-2">{leadingParty.name}</span>
+                        <h4 className="text-6xl font-serif italic mb-2">
                           {Math.round((stateData.pollData.prePoll[leadingParty.id] + stateData.pollData.postPoll[leadingParty.id] + stateData.pollData.exitPoll[leadingParty.id]) / 3)}
                         </h4>
-                        <span className="text-[10px] uppercase font-bold opacity-40 tracking-widest text-brand-accent">Consensus Mean</span>
-                        <div className="mt-6 flex items-center justify-center gap-4">
+                        <span className="text-[10px] uppercase font-bold opacity-40 tracking-widest text-brand-accent">Projected Mean Seats</span>
+                        <div className="mt-8 flex items-center justify-center gap-12">
                           <div className="text-center">
-                            <span className="text-[8px] uppercase block opacity-40 mb-1">Variance</span>
+                            <span className="text-[8px] uppercase block opacity-40 mb-1">Conf. Interval</span>
                             <span className="text-xs font-mono">±{Math.max(
-                              Math.abs(stateData.pollData.prePoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id]),
-                              Math.abs(stateData.pollData.postPoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id])
+                              Math.abs(stateData.pollData.prePoll[leadingParty.id] - stateData.pollData.postPoll[leadingParty.id]),
+                              Math.abs(stateData.pollData.postPoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id]),
+                              Math.abs(stateData.pollData.prePoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id])
                             )}</span>
                           </div>
                           <div className="w-[1px] h-4 bg-white/10" />
                           <div className="text-center">
-                            <span className="text-[8px] uppercase block opacity-40 mb-1">Confidence</span>
-                            <span className="text-xs font-mono">HIGH</span>
+                            <span className="text-[8px] uppercase block opacity-40 mb-1">Poll Variance</span>
+                            <span className="text-xs font-mono">
+                              {Math.max(
+                                Math.abs(stateData.pollData.prePoll[leadingParty.id] - stateData.pollData.postPoll[leadingParty.id]),
+                                Math.abs(stateData.pollData.postPoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id]),
+                                Math.abs(stateData.pollData.prePoll[leadingParty.id] - stateData.pollData.exitPoll[leadingParty.id])
+                              ) > 10 ? 'HIGH' : 'LOW'}
+                            </span>
                           </div>
                         </div>
+                      </div>
+                      <div className="mt-8 pt-6 border-t border-white/5 w-full">
+                         <p className="text-[9px] text-center opacity-30 italic leading-relaxed">
+                           Consolidated average of Pre-Poll, Post-Poll, and Exit-Poll data sets weighted by historical accuracy.
+                         </p>
                       </div>
                     </div>
 
@@ -624,20 +760,33 @@ export default function App() {
               >
                 <header className="mb-12">
                    <span className="text-[10px] uppercase tracking-[0.3em] text-brand-text/40 mb-2 block">Timeline Analysis</span>
-                   <h2 className="text-4xl font-serif italic">Historical Trajectory.</h2>
+                   <h2 className="text-4xl font-serif italic mb-4">Historical Trajectory.</h2>
+                   <p className="text-sm text-brand-text/50 max-w-xl italic">
+                     Analyzing the momentum shifts across the 2026 pre-election window. Data represents the aggregate seat projections from historical benchmarks.
+                   </p>
                 </header>
                 
-                <div className="bg-white border border-brand-text/5 p-8 h-[500px]">
+                <div className="bg-white border border-brand-text/5 p-4 md:p-8 h-[500px] shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stateData.trendData}>
+                    <LineChart data={stateData.trendData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      {stateData.parties.slice(0, 3).map((p: any) => (
-                        <Bar key={p.id} dataKey={p.id} fill={p.color} radius={[2, 2, 0, 0]} />
+                      <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '0px' }} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '20px' }} />
+                      {stateData.parties.slice(0, 4).map((p: any) => (
+                        <Line 
+                          key={p.id} 
+                          type="monotone" 
+                          dataKey={p.id} 
+                          stroke={p.color} 
+                          strokeWidth={2}
+                          dot={{ r: 3, fill: p.color }}
+                          activeDot={{ r: 5 }}
+                          name={p.name}
+                        />
                       ))}
-                    </BarChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               </motion.div>
@@ -663,9 +812,11 @@ export default function App() {
                 View Sources & Methodology →
               </button>
             </div>
-            <div className="hidden lg:flex flex-col border-l border-brand-text/10 pl-8">
-              <span className="text-[8px] uppercase tracking-[0.2em] text-brand-text/40 mb-1">Notice</span>
-              <span className="text-[8px] font-sans opacity-40 max-w-[240px] leading-tight text-brand-accent font-bold">FULLY AI-GENERATED FOR EDUCATIONAL PURPOSES.</span>
+            <div className="flex flex-col border-l border-brand-text/10 pl-8 bg-brand-accent/10 p-2 md:p-3 px-4 md:px-6">
+              <span className="text-[8px] uppercase tracking-[0.2em] text-brand-accent font-bold mb-1">Mandatory Disclosure</span>
+              <span className="text-[9px] font-sans text-brand-text/80 max-w-[320px] leading-tight italic">
+                This platform is <span className="font-bold text-brand-text">FULLY AI-GENERATED</span> for educational and research purposes. All projections are simulated datasets.
+              </span>
             </div>
           </div>
           
