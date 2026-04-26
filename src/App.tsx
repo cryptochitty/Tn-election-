@@ -85,12 +85,12 @@ const STATE_CONFIGS: Record<string, {
       { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
     ],
     parties: [
-      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0 },
-      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 42, voteShare: 26.2, momentum: 0 },
-      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 18, voteShare: 12.8, momentum: 0 },
-      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.5, momentum: 0 },
-      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 4, voteShare: 6.2, momentum: 0 },
-      { id: 'others', name: 'Others', color: '#666666', seats: 8, voteShare: 3.8, momentum: 0 },
+      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0, factor: 'Welfare Schemes & Social Justice' },
+      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 42, voteShare: 26.2, momentum: 0, factor: 'Rural Consolidation & Infrastructure' },
+      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 18, voteShare: 12.8, momentum: 0, factor: 'Youth Surge & Cinema Influence' },
+      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.5, momentum: 0, factor: 'National Security & Economic Reform' },
+      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 4, voteShare: 6.2, momentum: 0, factor: 'Ethnic Identity & Environmentalism' },
+      { id: 'others', name: 'Others', color: '#666666', seats: 8, voteShare: 3.8, momentum: 0, factor: 'Localized Leadership & Niche Issues' },
     ],
     trendData: [
       { date: 'Jan 26', dmk: 135, aiadmk: 50, tvk: 15 },
@@ -222,7 +222,23 @@ export default function App() {
   }, []);
 
   const [liveInsight, setLiveInsight] = useState('TVK youth outreach gaining momentum in urban clusters');
+  const [socialSentimentScores, setSocialSentimentScores] = useState<Record<number, number>>({ 0: 65, 1: 45, 2: 78 });
   
+  // Dynamic Sentiment Fluctuations
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSocialSentimentScores(prev => {
+        const next = { ...prev };
+        [0, 1, 2].forEach(idx => {
+          const shift = Math.floor(Math.random() * 5) - 2; // -2 to +2
+          next[idx] = Math.max(0, Math.min(100, (next[idx] || 50) + shift));
+        });
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Cycle through live insights for "frequent updates" feel
   useEffect(() => {
     const insights = [
@@ -650,6 +666,27 @@ export default function App() {
         </div>
       </div>
 
+      {/* Party Key Factors Ticker */}
+      <div className="w-full bg-brand-text text-brand-bg py-2 overflow-hidden border-b border-white/10 z-30">
+        <motion.div 
+          animate={{ x: [0, -2000] }}
+          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          className="flex whitespace-nowrap gap-12"
+        >
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-12">
+              {stateData.parties.map(p => (
+                <div key={p.id} className="flex items-center gap-3">
+                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-40">{p.name} Key Factor:</span>
+                  <span className="text-[10px] font-serif italic tracking-wider">{p.factor || 'Strategic Consolidation'}</span>
+                  <div className="w-1 h-1 rounded-full bg-brand-accent" />
+                </div>
+              ))}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar / Filter Panel */}
         <aside className="hidden lg:block lg:sticky lg:top-32 w-64 p-12 z-40 h-fit">
@@ -808,12 +845,16 @@ export default function App() {
                           <div key={idx} className="p-4 bg-brand-text/5 border border-brand-text/5 hover:border-brand-accent/20 transition-all group">
                             <div className="flex justify-between items-start mb-4">
                               <trend.icon size={20} className="text-brand-text/40 group-hover:text-brand-accent transition-colors" />
-                              <span className={`text-[8px] uppercase font-bold px-2 py-1 ${
-                                trend.sentiment === 'Positive' ? 'bg-green-100 text-green-700' : 
-                                trend.sentiment === 'Negative' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                              }`}>
-                                {trend.sentiment}
-                              </span>
+                              <div className="flex flex-col items-end">
+                                <span className={`text-[8px] uppercase font-bold px-2 py-1 ${
+                                  (socialSentimentScores[idx] || 50) > 60 ? 'bg-green-100 text-green-700' : 
+                                  (socialSentimentScores[idx] || 50) < 40 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {(socialSentimentScores[idx] || 50) > 60 ? 'Positive' : 
+                                   (socialSentimentScores[idx] || 50) < 40 ? 'Negative' : 'Neutral'}
+                                </span>
+                                <span className="text-[7px] font-mono mt-1 opacity-40">Score: {socialSentimentScores[idx] || 50}%</span>
+                              </div>
                             </div>
                             <div className="space-y-1">
                               <h4 className="text-[10px] uppercase tracking-widest text-brand-text/40">{trend.platform}</h4>
