@@ -258,15 +258,29 @@ export default function App() {
 
   const handleMomentumChange = (id: string, value: number) => {
     setStateData(prev => {
+      // 1. Update global party seats
       const updatedParties = prev.parties.map(p => {
         if (p.id === id) {
-          const swing = Math.round(value * 10);
-          const baseSeats = STATE_CONFIGS[selectedStateId].parties.find(orig => orig.id === id)?.seats || 0;
+          const swing = Math.round(value * 8); // Simulation Factor
+          const basePartyData = STATE_CONFIGS[selectedStateId].parties.find(orig => orig.id === id);
+          const baseSeats = basePartyData ? basePartyData.seats : 0;
           return { ...p, momentum: value, seats: Math.max(0, Math.min(prev.totalSeats, baseSeats + swing)) };
         }
         return p;
       });
-      return { ...prev, parties: updatedParties };
+
+      // 2. Proportional regional update
+      const updatedRegions = prev.regions.map(reg => {
+        const regPartySeats = { ...reg.partySeats };
+        if (regPartySeats[id] !== undefined) {
+          const localSwing = Math.round(value * (reg.total / 100) * 1.5);
+          const baseRegSeats = STATE_CONFIGS[selectedStateId].regions.find(r => r.id === reg.id)?.partySeats?.[id] || 0;
+          regPartySeats[id] = Math.max(0, Math.min(reg.total, baseRegSeats + localSwing));
+        }
+        return { ...reg, partySeats: regPartySeats };
+      });
+
+      return { ...prev, parties: updatedParties, regions: updatedRegions };
     });
   };
 
@@ -581,6 +595,19 @@ export default function App() {
             </button>
           </div>
         <div className="flex items-center gap-4">
+          <div className="relative hidden md:block group">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/30 group-focus-within:text-brand-accent transition-colors" />
+            <input 
+              type="text"
+              placeholder="SEARCH CONSTITUENCY..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.length > 0) setShowDeepDive(true);
+              }}
+              className="bg-brand-text/5 border border-brand-text/10 px-9 py-2 text-[10px] w-48 uppercase tracking-widest focus:outline-none focus:border-brand-accent transition-all focus:w-64"
+            />
+          </div>
           <div className="hidden xl:flex flex-col items-end mr-2 text-right">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1 h-1 rounded-full bg-brand-accent animate-ping" />
@@ -813,17 +840,17 @@ export default function App() {
                         </button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {stateData.constituencies?.slice(0, 4).map((c) => (
+                        {(stateData.constituencies?.filter(c => c.type === 'Star') || []).slice(0, 4).map((c) => (
                           <div key={c.id} className="p-4 border border-brand-text/5 bg-brand-bg/10 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors" onClick={() => handleOpenDeepDive(c.id)}>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[8px] uppercase font-bold text-brand-accent">{c.type}</span>
+                                <span className={`text-[8px] uppercase font-bold ${c.leading === 'DMK' ? 'text-red-600' : 'text-brand-accent'}`}>{c.type}</span>
                                 <h4 className="text-sm font-bold">{c.name}</h4>
                               </div>
                               <p className="text-[10px] text-brand-text/40 italic">{c.candidate}</p>
                             </div>
                             <div className="text-right">
-                              <span className="text-[10px] font-serif italic block text-brand-text leading-none">{c.leading}</span>
+                              <span className={`text-[10px] font-serif italic block leading-none ${c.leading === 'DMK' ? 'text-red-600' : 'text-brand-text'}`}>{c.leading}</span>
                               <span className="text-[8px] uppercase tracking-tighter text-brand-text/30 font-mono">+{c.margin}</span>
                             </div>
                           </div>
