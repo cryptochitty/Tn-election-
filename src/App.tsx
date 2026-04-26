@@ -29,7 +29,10 @@ import {
   Pie,
   Legend,
   LineChart,
-  Line
+  Line,
+  ScatterChart,
+  Scatter,
+  ZAxis
 } from 'recharts';
 
 const STATE_CONFIGS: Record<string, {
@@ -85,12 +88,12 @@ const STATE_CONFIGS: Record<string, {
       { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
     ],
     parties: [
-      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0, factor: 'Welfare Schemes & Social Justice' },
-      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 42, voteShare: 26.2, momentum: 0, factor: 'Rural Consolidation & Infrastructure' },
-      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 18, voteShare: 12.8, momentum: 0, factor: 'Youth Surge & Cinema Influence' },
-      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.5, momentum: 0, factor: 'National Security & Economic Reform' },
-      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 4, voteShare: 6.2, momentum: 0, factor: 'Ethnic Identity & Environmentalism' },
-      { id: 'others', name: 'Others', color: '#666666', seats: 8, voteShare: 3.8, momentum: 0, factor: 'Localized Leadership & Niche Issues' },
+      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0, factor: 'Welfare Schemes', factorImpact: 85 },
+      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 42, voteShare: 26.2, momentum: 0, factor: 'Rural Consolidation', factorImpact: 72 },
+      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 18, voteShare: 12.8, momentum: 0, factor: 'Youth Surge', factorImpact: 90 },
+      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.5, momentum: 0, factor: 'Economic Reform', factorImpact: 58 },
+      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 4, voteShare: 6.2, momentum: 0, factor: 'Identity Politics', factorImpact: 45 },
+      { id: 'others', name: 'Others', color: '#666666', seats: 8, voteShare: 3.8, momentum: 0, factor: 'Localized Issues', factorImpact: 30 },
     ],
     trendData: [
       { date: 'Jan 26', dmk: 135, aiadmk: 50, tvk: 15 },
@@ -133,10 +136,10 @@ const STATE_CONFIGS: Record<string, {
       { id: 'singur', name: 'Singur', type: 'Swing', leading: 'TMC', margin: '5,000+', candidate: 'Bechara Manna', history: [2000, 3500, 5000] },
     ],
     parties: [
-      { id: 'tmc', name: 'AITC/TMC', color: '#31a354', seats: 165, voteShare: 45.2, momentum: 0 },
-      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 95, voteShare: 36.8, momentum: 0 },
-      { id: 'left', name: 'Left-Congress', color: '#de2d26', seats: 30, voteShare: 14.5, momentum: 0 },
-      { id: 'others', name: 'Others', color: '#666666', seats: 4, voteShare: 3.5, momentum: 0 },
+      { id: 'tmc', name: 'AITC/TMC', color: '#31a354', seats: 165, voteShare: 45.2, momentum: 0, factor: 'Welfare Delivery', factorImpact: 88 },
+      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 95, voteShare: 36.8, momentum: 0, factor: 'Central Schemes', factorImpact: 75 },
+      { id: 'left', name: 'Left-Congress', color: '#de2d26', seats: 30, voteShare: 14.5, momentum: 0, factor: 'Secular Front', factorImpact: 40 },
+      { id: 'others', name: 'Others', color: '#666666', seats: 4, voteShare: 3.5, momentum: 0, factor: 'Local Grip', factorImpact: 20 },
     ],
     trendData: [
       { date: 'Jan 26', tmc: 170, bjp: 90, left: 25 },
@@ -178,10 +181,10 @@ const STATE_CONFIGS: Record<string, {
       { id: 'titabar', name: 'Titabar', type: 'Safe', leading: 'Congress', margin: '15,000+', candidate: 'Bhaskar Jyoti Baruah', history: [12000, 14000, 15000] },
     ],
     parties: [
-      { id: 'bjp', name: 'BJP+', color: '#FF9933', seats: 75, voteShare: 44.5, momentum: 0 },
-      { id: 'congress', name: 'Congress+', color: '#de2d26', seats: 42, voteShare: 35.2, momentum: 0 },
-      { id: 'aiudf', name: 'AIUDF', color: '#008136', seats: 8, voteShare: 12.8, momentum: 0 },
-      { id: 'others', name: 'Others', color: '#666666', seats: 1, voteShare: 7.5, momentum: 0 },
+      { id: 'bjp', name: 'BJP+', color: '#FF9933', seats: 75, voteShare: 44.5, momentum: 0, factor: 'Infrastructure', factorImpact: 82 },
+      { id: 'congress', name: 'Congress+', color: '#de2d26', seats: 42, voteShare: 35.2, momentum: 0, factor: 'Social Harmony', factorImpact: 60 },
+      { id: 'aiudf', name: 'AIUDF', color: '#008136', seats: 8, voteShare: 12.8, momentum: 0, factor: 'Minority Rights', factorImpact: 50 },
+      { id: 'others', name: 'Others', color: '#666666', seats: 1, voteShare: 7.5, momentum: 0, factor: 'Regionalism', factorImpact: 35 },
     ],
     trendData: [
       { date: 'Jan 26', bjp: 80, congress: 38 },
@@ -274,29 +277,80 @@ export default function App() {
 
   const handleMomentumChange = (id: string, value: number) => {
     setStateData(prev => {
-      // 1. Update global party seats
+      const stateBase = STATE_CONFIGS[selectedStateId];
+      
+      // 1. Calculate seat shifts from base for the target party
       const updatedParties = prev.parties.map(p => {
         if (p.id === id) {
-          const swing = Math.round(value * 8); // Simulation Factor
-          const basePartyData = STATE_CONFIGS[selectedStateId].parties.find(orig => orig.id === id);
+          const swing = Math.round(value * 8); // Swing intensity factor
+          const basePartyData = stateBase.parties.find(orig => orig.id === id);
           const baseSeats = basePartyData ? basePartyData.seats : 0;
-          return { ...p, momentum: value, seats: Math.max(0, Math.min(prev.totalSeats, baseSeats + swing)) };
+          return { ...p, momentum: value, seats: Math.max(0, Math.min(stateBase.totalSeats, baseSeats + swing)) };
         }
         return p;
       });
 
-      // 2. Proportional regional update
+      // 2. Zero-sum balancing: ensure total seats match the state total
+      const currentTotal = updatedParties.reduce((sum, p) => sum + p.seats, 0);
+      const diff = stateBase.totalSeats - currentTotal;
+      
+      let balancedParties;
+      if (diff !== 0) {
+        // Distribute the difference to other parties
+        const otherParties = updatedParties.filter(p => p.id !== id);
+        const othersSum = otherParties.reduce((sum, p) => sum + p.seats, 0);
+        
+        balancedParties = updatedParties.map(p => {
+          if (p.id === id) return p;
+          if (othersSum === 0) {
+             // If others have 0, just give/take from the first other party
+             if (p.id === otherParties[0]?.id) return { ...p, seats: Math.max(0, p.seats + diff) };
+             return p;
+          }
+          const share = p.seats / othersSum;
+          const correction = Math.round(diff * share);
+          return { ...p, seats: Math.max(0, p.seats + correction) };
+        });
+      } else {
+        balancedParties = updatedParties;
+      }
+
+      // Final normalization for rounding errors
+      const finalTotal = balancedParties.reduce((sum, p) => sum + p.seats, 0);
+      const finalDiff = stateBase.totalSeats - finalTotal;
+      if (finalDiff !== 0) {
+        const targetToAdjust = balancedParties.find(p => p.id !== id) || balancedParties[0];
+        balancedParties = balancedParties.map(p => 
+          p.id === targetToAdjust.id ? { ...p, seats: Math.max(0, p.seats + finalDiff) } : p
+        );
+      }
+
+      // 3. Proportional regional update
       const updatedRegions = prev.regions.map(reg => {
+        if (reg.id === 'all') return reg;
         const regPartySeats = { ...reg.partySeats };
-        if (regPartySeats[id] !== undefined) {
-          const localSwing = Math.round(value * (reg.total / 100) * 1.5);
-          const baseRegSeats = STATE_CONFIGS[selectedStateId].regions.find(r => r.id === reg.id)?.partySeats?.[id] || 0;
-          regPartySeats[id] = Math.max(0, Math.min(reg.total, baseRegSeats + localSwing));
+        
+        balancedParties.forEach(p => {
+          if (regPartySeats[p.id] !== undefined) {
+             const basePartySeats = stateBase.parties.find(bp => bp.id === p.id)?.seats || 1;
+             const ratio = p.seats / basePartySeats;
+             const baseRegSeats = stateBase.regions.find(r => r.id === reg.id)?.partySeats?.[p.id] || 0;
+             regPartySeats[p.id] = Math.round(baseRegSeats * ratio);
+          }
+        });
+        
+        // Normalize region total
+        const regTotal = Object.values(regPartySeats).reduce((a, b) => a + b, 0);
+        const regDiff = reg.total - regTotal;
+        if (regDiff !== 0) {
+           const firstKey = Object.keys(regPartySeats)[0];
+           if (firstKey) regPartySeats[firstKey] = Math.max(0, regPartySeats[firstKey] + regDiff);
         }
+
         return { ...reg, partySeats: regPartySeats };
       });
 
-      return { ...prev, parties: updatedParties, regions: updatedRegions };
+      return { ...prev, parties: balancedParties, regions: updatedRegions };
     });
   };
 
@@ -667,7 +721,7 @@ export default function App() {
       </div>
 
       {/* Party Key Factors Ticker */}
-      <div className="w-full bg-brand-text text-brand-bg py-2 overflow-hidden border-b border-white/10 z-30">
+      <div id="strategic-ticker" className="w-full bg-brand-text text-brand-bg py-2 overflow-hidden border-b border-white/10 z-30">
         <motion.div 
           animate={{ x: [0, -2000] }}
           transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
@@ -833,7 +887,7 @@ export default function App() {
                     </div>
 
                     {/* Social Media Pulse - new section */}
-                    <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                    <div id="social-pulse" className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
                       <div className="flex justify-between items-center mb-8">
                         <div className="flex items-center gap-2">
                           <Activity size={16} />
@@ -1084,7 +1138,13 @@ export default function App() {
                    </p>
                 </header>
                 
-                <div className="bg-white border border-brand-text/5 p-4 md:p-8 h-[500px] shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                <div className="bg-white border border-brand-text/5 p-4 md:p-8 h-[500px] shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)] mb-12">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xs font-bold uppercase tracking-wider">Historical Seat Projection</h3>
+                    <div className="flex gap-4">
+                      <span className="text-[8px] uppercase opacity-40 font-bold">Jan - Apr 2026 Window</span>
+                    </div>
+                  </div>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={stateData.trendData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -1106,6 +1166,113 @@ export default function App() {
                       ))}
                     </LineChart>
                   </ResponsiveContainer>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div id="sentiment-correlation" className="lg:col-span-8 bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                    <div className="flex justify-between items-center mb-8">
+                      <div className="flex items-center gap-2">
+                        <Share2 size={16} />
+                        <h3 className="text-xs font-bold uppercase tracking-wider">Sentiment-Factor Correlation</h3>
+                      </div>
+                      <span className="text-[8px] uppercase tracking-widest text-brand-text/40 font-bold">Bubble size = projected seats</span>
+                    </div>
+                    <div className="h-[400px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                          <XAxis 
+                            type="number" 
+                            dataKey="sentiment" 
+                            name="Social Sentiment" 
+                            unit="%" 
+                            domain={[0, 100]} 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{ fontSize: 10 }} 
+                            label={{ value: 'Social Sentiment %', position: 'insideBottom', offset: -10, fontSize: 10, fill: '#666' }}
+                          />
+                          <YAxis 
+                            type="number" 
+                            dataKey="impact" 
+                            name="Factor Impact" 
+                            unit="%" 
+                            domain={[0, 100]} 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{ fontSize: 10 }} 
+                            label={{ value: 'Strategic Factor Impact', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#666' }}
+                          />
+                          <ZAxis type="number" dataKey="seats" range={[100, 1000]} />
+                          <Tooltip 
+                            cursor={{ strokeDasharray: '3 3' }} 
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-brand-text text-brand-bg p-3 border border-white/10 shadow-xl">
+                                    <p className="text-[10px] font-bold uppercase mb-1">{data.name}</p>
+                                    <p className="text-xs font-serif italic mb-2">"{data.factor}"</p>
+                                    <div className="space-y-1 text-[9px] opacity-70">
+                                      <p>Sentiment: {Math.round(data.sentiment)}%</p>
+                                      <p>Impact: {data.impact}%</p>
+                                      <p>Projected Seats: {data.seats}</p>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Legend verticalAlign="top" height={36}/>
+                          {stateData.parties.map((p: any, i: number) => (
+                            <Scatter 
+                              key={p.id} 
+                              name={p.name} 
+                              data={[{ 
+                                name: p.name,
+                                sentiment: ((socialSentimentScores[i % 3] || 50) * 0.7) + (p.momentum * 10) + 15,
+                                impact: p.factorImpact,
+                                seats: p.seats,
+                                factor: p.factor 
+                              }]} 
+                              fill={p.color} 
+                            />
+                          ))}
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-8">
+                    <div className="bg-brand-text text-brand-bg p-8">
+                       <h4 className="text-[10px] uppercase tracking-widest font-bold mb-6 opacity-40">Correlation Matrix</h4>
+                       <div className="space-y-4">
+                         {stateData.parties.map(p => {
+                           const sentiment = ((socialSentimentScores[0] || 50) * 0.7) + (p.momentum * 10) + 15;
+                           const correlation = Math.abs(sentiment - p.factorImpact) < 15 ? 'HIGH' : Math.abs(sentiment - p.factorImpact) < 30 ? 'MEDIUM' : 'LOW';
+                           return (
+                             <div key={p.id} className="border-b border-white/10 pb-4">
+                               <div className="flex justify-between items-center mb-2">
+                                 <span className="text-[10px] font-bold uppercase">{p.name}</span>
+                                 <span className={`text-[8px] font-bold px-1 py-0.5 ${
+                                   correlation === 'HIGH' ? 'bg-green-500/20 text-green-400' :
+                                   correlation === 'MEDIUM' ? 'bg-orange-500/20 text-orange-400' : 'bg-red-500/20 text-red-400'
+                                 }`}>{correlation} SYNC</span>
+                               </div>
+                               <p className="text-[9px] opacity-40 italic">{p.factor} correlation with social digital footprint.</p>
+                             </div>
+                           );
+                         })}
+                       </div>
+                    </div>
+
+                    <div className="p-8 border border-brand-text/10 italic">
+                      <p className="text-[11px] leading-relaxed text-brand-text/60">
+                        * High Sync suggests that the digital narrative (social media sentiment) is effectively driving the primary strategic factor identified for the party. Low Sync indicates a disconnect between ground factors and online persona.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
