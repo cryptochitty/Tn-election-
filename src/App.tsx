@@ -62,7 +62,7 @@ const STATE_CONFIGS: Record<string, {
 }> = {
   tamilnadu: {
     name: 'Tamil Nadu',
-    description: 'Recent pre-poll aggregates suggest a strong consolidation for the DMK alliance reaching 152 seats, but with a significant shift in urban demographics where the TVK movement (Vijay) is capturing a 12.8% projected vote share among first-time voters and youth clusters.',
+    description: 'Latest pre-poll aggregations based on recent statistical data show a consolidation for the DMK alliance at 154 seats (42%), with TVK (Vijay) emerging as a significant force with 15% vote share and 21 projected seats.',
     insight: 'The TVK factor acts as a major disruptor in tri-polar seats, particularly in Chennai and North Bengal Vanniyar belts where split-vote dynamics could challenge traditional Dravidian arithmetic.',
     history: 'Dominated by the Dravidian movement, politics has revolved around linguistic identity and social justice since 1967, with DMK and AIADMK alternating power.',
     demographics: [
@@ -74,11 +74,11 @@ const STATE_CONFIGS: Record<string, {
     majority: 118,
     regions: [
       { id: 'all', label: 'All Regions', total: 234 },
-      { id: 'kongu', label: 'Kongu / West', total: 52, partySeats: { dmk: 30, aiadmk: 16, tvk: 2, bjp: 4 } },
-      { id: 'chennai', label: 'Greater Chennai', total: 31, partySeats: { dmk: 26, aiadmk: 3, tvk: 2 } },
-      { id: 'delta', label: 'Kaveri Delta', total: 38, partySeats: { dmk: 30, aiadmk: 6, tvk: 2 } },
-      { id: 'south', label: 'Deep South', total: 68, partySeats: { dmk: 44, aiadmk: 14, tvk: 6, others: 4 } },
-      { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 3, tvk: 6, bjp: 6, ntk: 4, others: 4 } },
+      { id: 'kongu', label: 'Kongu / West', total: 52, partySeats: { dmk: 30, aiadmk: 15, tvk: 3, bjp: 4 } },
+      { id: 'chennai', label: 'Greater Chennai', total: 31, partySeats: { dmk: 26, aiadmk: 2, tvk: 3 } },
+      { id: 'delta', label: 'Kaveri Delta', total: 38, partySeats: { dmk: 31, aiadmk: 5, tvk: 2 } },
+      { id: 'south', label: 'Deep South', total: 68, partySeats: { dmk: 45, aiadmk: 14, tvk: 7, others: 2 } },
+      { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 4, tvk: 6, bjp: 6, ntk: 7 } },
     ],
     constituencies: [
       { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', history: [12000, 14000, 15000] },
@@ -88,18 +88,18 @@ const STATE_CONFIGS: Record<string, {
       { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
     ],
     parties: [
-      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 152, voteShare: 42.5, momentum: 0, factor: 'Welfare Schemes', factorImpact: 85 },
-      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 42, voteShare: 26.2, momentum: 0, factor: 'Rural Consolidation', factorImpact: 72 },
-      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 18, voteShare: 12.8, momentum: 0, factor: 'Youth Surge', factorImpact: 90 },
-      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.5, momentum: 0, factor: 'Economic Reform', factorImpact: 58 },
-      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 4, voteShare: 6.2, momentum: 0, factor: 'Identity Politics', factorImpact: 45 },
-      { id: 'others', name: 'Others', color: '#666666', seats: 8, voteShare: 3.8, momentum: 0, factor: 'Localized Issues', factorImpact: 30 },
+      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 154, voteShare: 42.0, momentum: 0, factor: 'Welfare Schemes', factorImpact: 85 },
+      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 40, voteShare: 26.0, momentum: 0, factor: 'Rural Consolidation', factorImpact: 72 },
+      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 21, voteShare: 15.0, momentum: 0, factor: 'Youth Surge', factorImpact: 90 },
+      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.0, momentum: 0, factor: 'Economic Reform', factorImpact: 58 },
+      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 7, voteShare: 6.0, momentum: 0, factor: 'Identity Politics', factorImpact: 45 },
+      { id: 'others', name: 'Others', color: '#666666', seats: 2, voteShare: 3.0, momentum: 0, factor: 'Localized Issues', factorImpact: 30 },
     ],
     trendData: [
       { date: 'Jan 26', dmk: 135, aiadmk: 50, tvk: 15 },
       { date: 'Feb 26', dmk: 140, aiadmk: 48, tvk: 20 },
       { date: 'Mar 26', dmk: 148, aiadmk: 45, tvk: 18 },
-      { date: 'Apr 26', dmk: 152, aiadmk: 42, tvk: 18 },
+      { date: 'Apr 26', dmk: 154, aiadmk: 40, tvk: 21 },
     ],
     pollData: {
       prePoll: { dmk: 154, aiadmk: 40, tvk: 15, bjp: 12 },
@@ -275,57 +275,74 @@ export default function App() {
     setShowDeepDive(true);
   };
 
-  const handleMomentumChange = (id: string, value: number) => {
+  const handleVoteShareChange = (id: string, value: number) => {
     setStateData(prev => {
       const stateBase = STATE_CONFIGS[selectedStateId];
-      
-      // 1. Calculate seat shifts from base for the target party
+      const targetParty = prev.parties.find(p => p.id === id);
+      if (!targetParty) return prev;
+
+      // 1. Update vote share for the target party
+      const oldVoteShare = targetParty.voteShare;
+      const newVoteShare = value;
+      const diff = newVoteShare - oldVoteShare;
+
+      // 2. Proportional adjustment of other parties' vote shares to maintain 100%
+      const otherParties = prev.parties.filter(p => p.id !== id);
+      const othersTotalShare = otherParties.reduce((sum, p) => sum + p.voteShare, 0);
+
       const updatedParties = prev.parties.map(p => {
         if (p.id === id) {
-          const swing = Math.round(value * 8); // Swing intensity factor
+          // Calculate seat swing based on vote share change
+          // Heuristic: 1% vote share shift roughly equals 8-12 seats in TN (234 seats total)
+          // We'll use a dynamic multiplier based on the state's total seats
           const basePartyData = stateBase.parties.find(orig => orig.id === id);
-          const baseSeats = basePartyData ? basePartyData.seats : 0;
-          return { ...p, momentum: value, seats: Math.max(0, Math.min(stateBase.totalSeats, baseSeats + swing)) };
+          const baseVoteShare = basePartyData?.voteShare || 1;
+          const baseSeats = basePartyData?.seats || 0;
+          
+          // Momentum is the delta from baseline
+          const momentum = newVoteShare - baseVoteShare;
+          
+          // Logistic-style swing factor: 
+          const elasticity = 1.8;
+          const swingRatio = Math.pow(newVoteShare / baseVoteShare, elasticity);
+          let newSeats = Math.round(baseSeats * swingRatio);
+          
+          return { ...p, voteShare: newVoteShare, momentum, seats: Math.max(0, Math.min(stateBase.totalSeats, newSeats)) };
+        } else {
+          // Adjust others proportionally
+          if (othersTotalShare === 0) return p;
+          const proportion = p.voteShare / othersTotalShare;
+          const shareAdjustment = diff * proportion;
+          const nextShare = Math.max(0, p.voteShare - shareAdjustment);
+          
+          const basePartyData = stateBase.parties.find(orig => orig.id === p.id);
+          const baseVoteShare = basePartyData?.voteShare || 1;
+          const baseSeats = basePartyData?.seats || 0;
+          
+          const momentum = nextShare - baseVoteShare;
+          
+          const elasticity = 1.8;
+          const swingRatio = Math.pow(nextShare / baseVoteShare, elasticity);
+          let newSeats = Math.round(baseSeats * swingRatio);
+
+          return { ...p, voteShare: nextShare, momentum, seats: Math.max(0, Math.min(stateBase.totalSeats, newSeats)) };
         }
-        return p;
       });
 
-      // 2. Zero-sum balancing: ensure total seats match the state total
-      const currentTotal = updatedParties.reduce((sum, p) => sum + p.seats, 0);
-      const diff = stateBase.totalSeats - currentTotal;
+      // 3. Ensure total seats match the state total (Zero-sum balancing)
+      const currentTotalSeats = updatedParties.reduce((sum, p) => sum + p.seats, 0);
+      const seatDiff = stateBase.totalSeats - currentTotalSeats;
       
-      let balancedParties;
-      if (diff !== 0) {
-        // Distribute the difference to other parties
-        const otherParties = updatedParties.filter(p => p.id !== id);
-        const othersSum = otherParties.reduce((sum, p) => sum + p.seats, 0);
-        
-        balancedParties = updatedParties.map(p => {
-          if (p.id === id) return p;
-          if (othersSum === 0) {
-             // If others have 0, just give/take from the first other party
-             if (p.id === otherParties[0]?.id) return { ...p, seats: Math.max(0, p.seats + diff) };
-             return p;
-          }
-          const share = p.seats / othersSum;
-          const correction = Math.round(diff * share);
-          return { ...p, seats: Math.max(0, p.seats + correction) };
-        });
-      } else {
-        balancedParties = updatedParties;
-      }
-
-      // Final normalization for rounding errors
-      const finalTotal = balancedParties.reduce((sum, p) => sum + p.seats, 0);
-      const finalDiff = stateBase.totalSeats - finalTotal;
-      if (finalDiff !== 0) {
-        const targetToAdjust = balancedParties.find(p => p.id !== id) || balancedParties[0];
-        balancedParties = balancedParties.map(p => 
-          p.id === targetToAdjust.id ? { ...p, seats: Math.max(0, p.seats + finalDiff) } : p
+      let balancedParties = updatedParties;
+      if (seatDiff !== 0) {
+        // Distribute seat difference to all but the biggest swing party if possible, or just the top party
+        const adjustTarget = updatedParties.filter(p => p.id !== id).sort((a, b) => b.seats - a.seats)[0] || updatedParties[0];
+        balancedParties = updatedParties.map(p => 
+          p.id === adjustTarget.id ? { ...p, seats: Math.max(0, p.seats + seatDiff) } : p
         );
       }
 
-      // 3. Proportional regional update
+      // 4. Proportional regional update
       const updatedRegions = prev.regions.map(reg => {
         if (reg.id === 'all') return reg;
         const regPartySeats = { ...reg.partySeats };
@@ -343,8 +360,8 @@ export default function App() {
         const regTotal = (Object.values(regPartySeats) as number[]).reduce((a, b) => a + b, 0);
         const regDiff = reg.total - regTotal;
         if (regDiff !== 0) {
-           const firstKey = Object.keys(regPartySeats)[0];
-           if (firstKey) regPartySeats[firstKey] = Math.max(0, regPartySeats[firstKey] + regDiff);
+           const firstKey = Object.keys(regPartySeats).sort((a, b) => (regPartySeats[b] || 0) - (regPartySeats[a] || 0))[0];
+           if (firstKey) regPartySeats[firstKey] = Math.max(0, (regPartySeats[firstKey] || 0) + regDiff);
         }
 
         return { ...reg, partySeats: regPartySeats };
@@ -1085,9 +1102,9 @@ export default function App() {
               >
                 <header className="mb-12">
                    <span className="text-[10px] uppercase tracking-[0.3em] text-brand-text/40 mb-2 block">Prediction Engine</span>
-                   <h2 className="text-4xl font-serif italic mb-4">Swing Simulator.</h2>
+                   <h2 className="text-4xl font-serif italic mb-4">Vote Share Simulator.</h2>
                    <p className="text-sm text-brand-text/50 max-w-xl italic">
-                     Adjust party performance to see how vote share swings affect final seat counts. This model considers regional demographic weights.
+                     Adjust party vote share percentage to see how shifts affect final seat projections. This model uses a non-linear seat-vote swing algorithm.
                    </p>
                 </header>
 
@@ -1101,21 +1118,21 @@ export default function App() {
                             <span className="text-xs font-bold uppercase">{party.name}</span>
                           </div>
                           <span className="text-xs font-mono font-bold">
-                            {party.momentum > 0 ? '+' : ''}{party.momentum.toFixed(1)}
+                            {party.voteShare.toFixed(1)}%
                           </span>
                         </div>
                         <input 
                           type="range"
-                          min="-2"
-                          max="2"
-                          step="0.1"
-                          value={party.momentum}
-                          onChange={(e) => handleMomentumChange(party.id, parseFloat(e.target.value))}
+                          min="0"
+                          max="100"
+                          step="0.5"
+                          value={party.voteShare}
+                          onChange={(e) => handleVoteShareChange(party.id, parseFloat(e.target.value))}
                           className="w-full h-1 bg-brand-text/5 appearance-none cursor-pointer accent-brand-text"
                         />
                         <div className="flex justify-between text-[9px] opacity-40 uppercase tracking-widest">
-                          <span>Negative Swing</span>
-                          <span>Positive Momentum</span>
+                          <span>0% Vote</span>
+                          <span>100% Vote</span>
                         </div>
                       </div>
                     ))}
@@ -1123,7 +1140,7 @@ export default function App() {
                       onClick={resetSimulation}
                       className="text-[10px] uppercase tracking-widest font-bold underline"
                     >
-                      Reset Strategy
+                      Reset Dataset
                     </button>
                   </div>
 
