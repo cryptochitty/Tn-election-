@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   TrendingUp, 
@@ -476,14 +476,39 @@ export default function App() {
     setTurnout(STATE_CONFIGS[selectedStateId].defaultTurnout);
   };
 
-  const leadingParty = [...stateData.parties].sort((a, b) => b.seats - a.seats)[0];
-  const activeRegionData = stateData.regions.find(r => r.id === activeRegion);
-  const regionLeader = activeRegion === 'all' 
-    ? leadingParty 
-    : Object.entries(activeRegionData?.partySeats || {})
-        .sort(([, a], [, b]) => (b as number) - (a as number))[0]
-        ? stateData.parties.find(p => p.id === Object.entries(activeRegionData?.partySeats || {}).sort(([, a], [, b]) => (b as number) - (a as number))[0][0]) || leadingParty
-        : leadingParty;
+  // Derived Data with full guards
+  const stateParties = stateData?.parties || [];
+  const stateRegions = stateData?.regions || [];
+  const stateConstituencies = stateData?.constituencies || [];
+
+  const sortedParties = [...stateParties].sort((a, b) => (b.seats || 0) - (a.seats || 0));
+  const leadingParty = sortedParties[0] || { id: 'na', name: 'N/A', color: '#666', seats: 0, voteShare: 0 };
+  
+  const activeRegionData = stateRegions.find(r => r.id === activeRegion);
+  
+  const regionLeader = useMemo(() => {
+    if (!stateData) return leadingParty;
+    if (activeRegion === 'all') return leadingParty;
+    
+    const partySeats = activeRegionData?.partySeats || {};
+    const entries = Object.entries(partySeats).sort(([, a], [, b]) => (b as number) - (a as number));
+    const topEntry = entries[0];
+    
+    if (topEntry) {
+      return stateParties.find(p => p.id === topEntry[0]) || leadingParty;
+    }
+    return leadingParty;
+  }, [stateData, activeRegion, activeRegionData, stateParties, leadingParty]);
+
+  if (!stateData) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-brand-bg text-brand-text p-8 text-center">
+        <div className="w-12 h-12 border-2 border-brand-text/10 border-t-brand-accent rounded-full animate-spin mb-6" />
+        <div className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-40">System Initializing</div>
+        <p className="mt-2 text-xs italic opacity-30">Loading State Configuration...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-brand-bg text-brand-text font-sans overflow-x-hidden select-none pb-24">
@@ -674,7 +699,7 @@ export default function App() {
                                 <h3 className="text-sm font-serif italic">Historical Vote Margin Trend (Last 3 Cycles)</h3>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stateData.parties.find(p => p.id === stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading.toLowerCase() || p.name.includes(stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading || ''))?.color || '#000' }} />
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stateData.parties?.find(p => p.id === stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading?.toLowerCase() || p.name.includes(stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading || ''))?.color || '#000' }} />
                                 <span className="text-[9px] uppercase tracking-widest font-bold opacity-60">
                                     {stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading} Dominance
                                 </span>
@@ -716,7 +741,7 @@ export default function App() {
                                 <Line 
                                   type="monotone" 
                                   dataKey="val" 
-                                  stroke={stateData.parties.find(p => p.id === stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading.toLowerCase() || p.name.includes(stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading || ''))?.color || '#000'} 
+                                  stroke={stateData.parties?.find(p => p.id === stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading?.toLowerCase() || p.name.includes(stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading || ''))?.color || '#000'} 
                                   strokeWidth={3}
                                   dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
                                   activeDot={{ r: 6, strokeWidth: 0 }}
