@@ -74,11 +74,11 @@ const STATE_CONFIGS: Record<string, {
     majority: 118,
     regions: [
       { id: 'all', label: 'All Regions', total: 234 },
-      { id: 'kongu', label: 'Kongu / West', total: 54, partySeats: { dmk: 30, aiadmk: 18, tvk: 2, bjp: 4 } },
-      { id: 'chennai', label: 'Greater Chennai', total: 28, partySeats: { dmk: 24, aiadmk: 2, tvk: 2 } },
-      { id: 'delta', label: 'Kaveri Delta', total: 32, partySeats: { dmk: 26, aiadmk: 4, tvk: 2 } },
-      { id: 'south', label: 'Deep South', total: 60, partySeats: { dmk: 38, aiadmk: 12, tvk: 6, others: 4 } },
-      { id: 'north', label: 'Vanniyar Belt', total: 60, partySeats: { dmk: 34, aiadmk: 6, tvk: 6, bjp: 6, ntk: 4, others: 4 } },
+      { id: 'kongu', label: 'Kongu / West', total: 52, partySeats: { dmk: 30, aiadmk: 16, tvk: 2, bjp: 4 } },
+      { id: 'chennai', label: 'Greater Chennai', total: 31, partySeats: { dmk: 26, aiadmk: 3, tvk: 2 } },
+      { id: 'delta', label: 'Kaveri Delta', total: 38, partySeats: { dmk: 30, aiadmk: 6, tvk: 2 } },
+      { id: 'south', label: 'Deep South', total: 68, partySeats: { dmk: 44, aiadmk: 14, tvk: 6, others: 4 } },
+      { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 3, tvk: 6, bjp: 6, ntk: 4, others: 4 } },
     ],
     constituencies: [
       { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', history: [12000, 14000, 15000] },
@@ -340,7 +340,7 @@ export default function App() {
         });
         
         // Normalize region total
-        const regTotal = Object.values(regPartySeats).reduce((a, b) => a + b, 0);
+        const regTotal = (Object.values(regPartySeats) as number[]).reduce((a, b) => a + b, 0);
         const regDiff = reg.total - regTotal;
         if (regDiff !== 0) {
            const firstKey = Object.keys(regPartySeats)[0];
@@ -539,6 +539,28 @@ export default function App() {
                           <span className="text-xs font-bold text-brand-accent">2.4% Swing</span>
                         </div>
                       </div>
+
+                      {stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.history && (
+                        <div className="mt-8 p-6 bg-white border border-brand-text/10">
+                          <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4 opacity-40">Historical Vote Margin Trend (Last 3 Elections)</h4>
+                          <div className="h-32 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={stateData.constituencies.find(c => c.id === selectedConstituencyId)?.history?.map((val, i) => ({ val, year: i === 0 ? '2011' : i === 1 ? '2016' : '2021' }))}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
+                                <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fontSize: 9 }} />
+                                <YAxis hide />
+                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ fontSize: '10px' }} />
+                                <Bar 
+                                  dataKey="val" 
+                                  fill={stateData.parties.find(p => p.id === stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading.toLowerCase() || p.name.includes(stateData.constituencies?.find(c => c.id === selectedConstituencyId)?.leading || ''))?.color || '#000'} 
+                                  radius={[2, 2, 0, 0]}
+                                  name="Victory Margin"
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* New AI Analysis Integration */}
                       <div className="mt-8 p-6 bg-brand-text/5 border-l-2 border-brand-accent">
