@@ -14,7 +14,9 @@ import {
   LayoutDashboard,
   Activity,
   Share2,
-  Search
+  Search,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -34,6 +36,7 @@ import {
   Scatter,
   ZAxis
 } from 'recharts';
+import { analyzeTurnoutFactors } from './services/geminiService';
 
 const STATE_CONFIGS: Record<string, {
   name: string;
@@ -305,6 +308,27 @@ export default function App() {
   const [liveInsight, setLiveInsight] = useState('TVK youth outreach gaining momentum in urban clusters');
   const [socialSentimentScores, setSocialSentimentScores] = useState<Record<number, number>>({ 0: 65, 1: 45, 2: 78 });
   
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAiAnalysis = async (constituencyName: string) => {
+    setIsAnalyzing(true);
+    setAiAnalysis(null);
+    try {
+      const result = await analyzeTurnoutFactors(
+        constituencyName, 
+        stateData.name, 
+        stateData.description,
+        stateData.insight
+      );
+      setAiAnalysis(result || "No analysis available.");
+    } catch (error) {
+      setAiAnalysis("Error generating analysis. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+  
   // Dynamic Sentiment Fluctuations
   useEffect(() => {
     const timer = setInterval(() => {
@@ -345,6 +369,7 @@ export default function App() {
     setActiveRegion('all');
     setSelectedConstituencyId(null);
     setSearchTerm('');
+    setAiAnalysis(null);
   }, [selectedStateId]);
 
   const handleOpenDeepDive = (constituencyId?: string) => {
@@ -370,55 +395,52 @@ export default function App() {
       const othersTotalShare = otherParties.reduce((sum, p) => sum + p.voteShare, 0);
 
       const updatedParties = prev.parties.map(p => {
+        let voteShare = p.voteShare;
         if (p.id === id) {
-          // Calculate seat swing based on vote share change
-          // Heuristic: 1% vote share shift roughly equals 8-12 seats in TN (234 seats total)
-          // We'll use a dynamic multiplier based on the state's total seats
-          const basePartyData = stateBase.parties.find(orig => orig.id === id);
-          const baseVoteShare = basePartyData?.voteShare || 1;
-          const baseSeats = basePartyData?.seats || 0;
-          
-          // Momentum is the delta from baseline
-          const momentum = newVoteShare - baseVoteShare;
-          
-          // Logistic-style swing factor: 
-          const elasticity = 1.8;
-          const swingRatio = Math.pow(newVoteShare / baseVoteShare, elasticity);
-          let newSeats = Math.round(baseSeats * swingRatio);
-          
-          return { ...p, voteShare: newVoteShare, momentum, seats: Math.max(0, Math.min(stateBase.totalSeats, newSeats)) };
-        } else {
-          // Adjust others proportionally
-          if (othersTotalShare === 0) return p;
+          voteShare = newVoteShare;
+        } else if (othersTotalShare > 0) {
           const proportion = p.voteShare / othersTotalShare;
-          const shareAdjustment = diff * proportion;
-          const nextShare = Math.max(0, p.voteShare - shareAdjustment);
-          
-          const basePartyData = stateBase.parties.find(orig => orig.id === p.id);
-          const baseVoteShare = basePartyData?.voteShare || 1;
-          const baseSeats = basePartyData?.seats || 0;
-          
-          const momentum = nextShare - baseVoteShare;
-          
-          const elasticity = 1.8;
-          const swingRatio = Math.pow(nextShare / baseVoteShare, elasticity);
-          let newSeats = Math.round(baseSeats * swingRatio);
-
-          return { ...p, voteShare: nextShare, momentum, seats: Math.max(0, Math.min(stateBase.totalSeats, newSeats)) };
+          voteShare = Math.max(0, p.voteShare - (diff * proportion));
+        } else {
+          // If others were all at 0, distribute the decrease or just keep at 0
+          voteShare = Math.max(0, p.voteShare - (diff / Math.max(1, otherParties.length)));
         }
+
+        const basePartyData = stateBase.parties.find(orig => orig.id === p.id);
+        const baseVoteShare = basePartyData?.voteShare || 1;
+        const momentum = voteShare - baseVoteShare;
+        
+        return { ...p, voteShare, momentum };
       });
 
-      // 3. Ensure total seats match the state total (Zero-sum balancing)
-      const currentTotalSeats = updatedParties.reduce((sum, p) => sum + p.seats, 0);
+      // Normalize vote shares to ensure they sum to 100%
+      const currentTotalVS = updatedParties.reduce((sum, p) => sum + p.voteShare, 0);
+      if (currentTotalVS > 0) {
+        updatedParties.forEach(p => p.voteShare = (p.voteShare / currentTotalVS) * 100);
+      }
+
+      // 3. Seat Projection using Power Law (Cube Law Approximation)
+      // Standard k=2.5 to 3.0 for FPTP systems to project seats from vote shares
+      const k = 2.8;
+      const powerSum = updatedParties.reduce((sum, p) => sum + Math.pow(p.voteShare, k), 0);
+      
+      const seatsAdjustedParties = updatedParties.map(p => {
+        const seatRatio = powerSum > 0 ? Math.pow(p.voteShare, k) / powerSum : 0;
+        const projectedSeats = Math.round(seatRatio * stateBase.totalSeats);
+        return { ...p, seats: projectedSeats };
+      });
+
+      // Ensure total seats match the state total (Zero-sum balancing)
+      const currentTotalSeats = seatsAdjustedParties.reduce((sum, p) => sum + p.seats, 0);
       const seatDiff = stateBase.totalSeats - currentTotalSeats;
       
-      let balancedParties = updatedParties;
       if (seatDiff !== 0) {
-        // Distribute seat difference to all but the biggest swing party if possible, or just the top party
-        const adjustTarget = updatedParties.filter(p => p.id !== id).sort((a, b) => b.seats - a.seats)[0] || updatedParties[0];
-        balancedParties = updatedParties.map(p => 
-          p.id === adjustTarget.id ? { ...p, seats: Math.max(0, p.seats + seatDiff) } : p
-        );
+        // Distribute seat difference to the largest parties
+        const sorted = [...seatsAdjustedParties].sort((a, b) => b.seats - a.seats);
+        const target = sorted[0];
+        seatsAdjustedParties.forEach(p => {
+          if (p.id === target.id) p.seats = Math.max(0, p.seats + seatDiff);
+        });
       }
 
       // 4. Proportional regional update
@@ -426,12 +448,10 @@ export default function App() {
         if (reg.id === 'all') return reg;
         const regPartySeats = { ...reg.partySeats };
         
-        balancedParties.forEach(p => {
+        seatsAdjustedParties.forEach(p => {
           if (regPartySeats[p.id] !== undefined) {
-             const basePartySeats = stateBase.parties.find(bp => bp.id === p.id)?.seats || 1;
-             const ratio = p.seats / basePartySeats;
-             const baseRegSeats = stateBase.regions.find(r => r.id === reg.id)?.partySeats?.[p.id] || 0;
-             regPartySeats[p.id] = Math.round(baseRegSeats * ratio);
+             const overallSeatShare = p.seats / stateBase.totalSeats;
+             regPartySeats[p.id] = Math.round(reg.total * overallSeatShare);
           }
         });
         
@@ -446,9 +466,10 @@ export default function App() {
         return { ...reg, partySeats: regPartySeats };
       });
 
-      return { ...prev, parties: balancedParties, regions: updatedRegions };
+      return { ...prev, parties: seatsAdjustedParties, regions: updatedRegions };
     });
   };
+
 
   const resetSimulation = () => {
     setStateData(STATE_CONFIGS[selectedStateId]);
@@ -457,6 +478,12 @@ export default function App() {
 
   const leadingParty = [...stateData.parties].sort((a, b) => b.seats - a.seats)[0];
   const activeRegionData = stateData.regions.find(r => r.id === activeRegion);
+  const regionLeader = activeRegion === 'all' 
+    ? leadingParty 
+    : Object.entries(activeRegionData?.partySeats || {})
+        .sort(([, a], [, b]) => (b as number) - (a as number))[0]
+        ? stateData.parties.find(p => p.id === Object.entries(activeRegionData?.partySeats || {}).sort(([, a], [, b]) => (b as number) - (a as number))[0][0]) || leadingParty
+        : leadingParty;
 
   return (
     <div className="relative min-h-screen w-full bg-brand-bg text-brand-text font-sans overflow-x-hidden select-none pb-24">
@@ -663,17 +690,57 @@ export default function App() {
                       
                       {/* New AI Analysis Integration */}
                       <div className="mt-8 p-6 bg-brand-text/5 border-l-2 border-brand-accent">
-                        <h4 className="text-[10px] uppercase tracking-widest font-bold mb-4">Gemini AI Analysis: Aggregated Trends</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] leading-relaxed italic text-brand-text/60">
-                          <div>
-                            <p className="mb-2 uppercase text-[8px] font-bold text-brand-text/40">Market Sentiment</p>
-                            Extreme polarization in rural clusters; youth demographic (18-24) showing 22% indecision coefficient, likely favoring newer political entrants.
+                        <div className="flex justify-between items-center mb-6">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={16} className="text-brand-accent" />
+                            <h4 className="text-[10px] uppercase tracking-widest font-bold">Constituency Evolution Analysis (Gemini AI)</h4>
                           </div>
-                          <div>
-                            <p className="mb-2 uppercase text-[8px] font-bold text-brand-text/40">Update Frequency</p>
-                            Analysis updated every 4 hours based on social media velocity and localized poll aggregates. Sentiment volatility index: High.
-                          </div>
+                          <button 
+                            onClick={() => {
+                              const c = stateData.constituencies?.find(c => c.id === selectedConstituencyId);
+                              if (c) handleAiAnalysis(c.name);
+                            }}
+                            disabled={isAnalyzing}
+                            className={`flex items-center gap-2 px-3 py-1.5 border border-brand-accent/30 text-[9px] uppercase tracking-widest font-bold transition-all ${
+                              isAnalyzing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-accent hover:text-white'
+                            }`}
+                          >
+                            {isAnalyzing ? (
+                              <>
+                                <Loader2 size={12} className="animate-spin" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              'Run Analysis'
+                            )}
+                          </button>
                         </div>
+
+                        {aiAnalysis ? (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-[11px] leading-relaxed italic text-brand-text/80 space-y-4 prose-sm"
+                          >
+                            <style>{`
+                              .prose-sm p { margin-bottom: 0.5rem; }
+                              .prose-sm ul { list-style-type: none; margin-left: 0.5rem; }
+                              .prose-sm li:before { content: "• "; color: var(--color-brand-accent); }
+                            `}</style>
+                            <div className="whitespace-pre-wrap">{aiAnalysis}</div>
+                          </motion.div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] leading-relaxed italic text-brand-text/60">
+                            <div>
+                              <p className="mb-2 uppercase text-[8px] font-bold text-brand-text/40">Market Sentiment</p>
+                              Extreme polarization in rural clusters; youth demographic (18-24) showing 22% indecision coefficient, likely favoring newer political entrants.
+                            </div>
+                            <div>
+                              <p className="mb-2 uppercase text-[8px] font-bold text-brand-text/40">Update Frequency</p>
+                              Analysis updated every 4 hours based on social media velocity and localized poll aggregates. Sentiment volatility index: High.
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <p className="mt-8 text-[11px] leading-relaxed italic text-brand-text/70">
@@ -965,7 +1032,7 @@ export default function App() {
                         ))}
                       </div>
                       <p className="text-[11px] italic text-brand-text/60 mt-8">
-                        Current projection shows <span className="font-bold text-brand-text">{leadingParty.name}</span> leading in {activeRegion === 'all' ? 'the entire state' : activeRegionData?.label}.
+                        Current projection shows <span className="font-bold text-brand-text">{regionLeader.name}</span> leading in {activeRegion === 'all' ? 'the entire state' : activeRegionData?.label}.
                       </p>
                     </div>
 
@@ -1239,7 +1306,7 @@ export default function App() {
                         step="0.1"
                         value={turnout}
                         onChange={(e) => setTurnout(parseFloat(e.target.value))}
-                        className="w-full h-1 bg-brand-text/10 appearance-none cursor-pointer accent-brand-accent"
+                        className="w-full h-1 bg-brand-text/20 appearance-none cursor-pointer accent-brand-accent"
                       />
                       <div className="flex justify-between text-[9px] opacity-40 uppercase tracking-widest mt-2">
                         <span>50% Pool</span>
@@ -1276,7 +1343,7 @@ export default function App() {
                           step="0.5"
                           value={party.voteShare}
                           onChange={(e) => handleVoteShareChange(party.id, parseFloat(e.target.value))}
-                          className="w-full h-1 bg-brand-text/5 appearance-none cursor-pointer accent-brand-text"
+                          className="w-full h-1 bg-brand-text/20 appearance-none cursor-pointer accent-brand-text"
                         />
                         <div className="flex justify-between text-[9px] opacity-40 uppercase tracking-widest">
                           <span>0% Vote</span>
