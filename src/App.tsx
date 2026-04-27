@@ -89,11 +89,23 @@ const STATE_CONFIGS: Record<string, {
       { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 10, tvk: 6, ntk: 7 } },
     ],
     constituencies: [
-      { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', history: [12000, 14000, 15000] },
-      { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', history: [40000, 42000, 45000] },
-      { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', history: [1000, 3000, 5000] },
-      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'AIADMK', margin: '1,200+', candidate: 'BJP-Coalition', history: [2500, 1800, 1200] },
-      { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
+      { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', regionId: 'chennai', history: [12000, 14000, 15000] },
+      { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', regionId: 'chennai', history: [40000, 42000, 45000] },
+      { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', regionId: 'south', history: [1000, 3000, 5000] },
+      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'AIADMK', margin: '1,200+', candidate: 'BJP-Coalition', regionId: 'kongu', history: [2500, 1800, 1200] },
+      { id: 'edappadi', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', regionId: 'kongu', history: [28000, 29000, 30000] },
+      { id: 'dindigul', name: 'Dindigul', type: 'Star', leading: 'DMK', margin: '22,000+', candidate: 'Dindigul Leoni', regionId: 'south', history: [18000, 20000, 22000] },
+      { id: 'madurai-central', name: 'Madurai Central', type: 'Star', leading: 'DMK', margin: '18,500+', candidate: 'PTR Palanivel Thiagarajan', regionId: 'south', history: [16000, 17500, 18500] },
+      { id: 'trichy-east', name: 'Trichy (East)', type: 'Swing', leading: 'DMK', margin: '4,000+', candidate: 'Inigo Irudhayaraj', regionId: 'delta', history: [8000, 6000, 4000] },
+      { id: 'villupuram', name: 'Villupuram', type: 'Swing', leading: 'AIADMK', margin: '2,500+', candidate: 'C.V. Shanmugam', regionId: 'north', history: [5000, 4000, 2500] },
+      { id: 'thanjavur', name: 'Thanjavur', type: 'Safe', leading: 'DMK', margin: '28,000+', candidate: 'Anbalagan', regionId: 'delta', history: [25000, 26000, 28000] },
+      { id: 'coimbatore-north', name: 'Coimbatore North', type: 'Swing', leading: 'AIADMK', margin: '3,800+', candidate: 'Amman Arjunan', regionId: 'kongu', history: [6000, 5000, 3800] },
+      { id: 'salem-south', name: 'Salem South', type: 'Safe', leading: 'AIADMK', margin: '22,000+', candidate: 'Balasubramanian', regionId: 'kongu', history: [20000, 21000, 22000] },
+      { id: 'erode-east', name: 'Erode East', type: 'Star', leading: 'DMK', margin: '66,000+', candidate: 'E.V.K.S. Elangovan', regionId: 'kongu', history: [10000, 35000, 66000] },
+      { id: 'tiruppur-south', name: 'Tiruppur South', type: 'Swing', leading: 'AIADMK', margin: '1,500+', candidate: 'Gunasekaran', regionId: 'kongu', history: [3000, 2200, 1500] },
+      { id: 'thoothukudi', name: 'Thoothukudi', type: 'Safe', leading: 'DMK', margin: '35,000+', candidate: 'Geetha Jeevan', regionId: 'south', history: [30000, 32000, 35000] },
+      { id: 'ramanathapuram', name: 'Ramanathapuram', type: 'Star', leading: 'DMK', margin: '12,000+', candidate: 'K. Muthuramalingam', regionId: 'south', history: [8000, 10000, 12000] },
+      { id: 'kancheepuram', name: 'Kancheepuram', type: 'Safe', leading: 'DMK', margin: '20,000+', candidate: 'Ezhilarasan', regionId: 'north', history: [15000, 18000, 20000] },
     ],
     parties: [
       { 
@@ -207,10 +219,10 @@ const STATE_CONFIGS: Record<string, {
       { id: 'south', label: 'South Bengal', total: 240, partySeats: { tmc: 145, bjp: 65, left: 26, others: 4 } },
     ],
     constituencies: [
-      { id: 'nandigram', name: 'Nandigram', type: 'Star', leading: 'BJP', margin: '1,500+', candidate: 'Suvendu Adhikari', history: [4000, 2500, 1500] },
-      { id: 'bhawanipore', name: 'Bhawanipore', type: 'Safe', leading: 'TMC', margin: '50,000+', candidate: 'Mamata Banerjee', history: [45000, 48000, 50000] },
-      { id: 'diamond-harbour', name: 'Diamond Harbour', type: 'Safe', leading: 'TMC', margin: '40,000+', candidate: 'Abhishek Banerjee', history: [35000, 38000, 40000] },
-      { id: 'singur', name: 'Singur', type: 'Swing', leading: 'TMC', margin: '5,000+', candidate: 'Bechara Manna', history: [2000, 3500, 5000] },
+      { id: 'nandigram', name: 'Nandigram', type: 'Star', leading: 'BJP', margin: '1,500+', candidate: 'Suvendu Adhikari', regionId: 'south', history: [4000, 2500, 1500] },
+      { id: 'bhawanipore', name: 'Bhawanipore', type: 'Safe', leading: 'TMC', margin: '50,000+', candidate: 'Mamata Banerjee', regionId: 'south', history: [45000, 48000, 50000] },
+      { id: 'diamond-harbour', name: 'Diamond Harbour', type: 'Safe', leading: 'TMC', margin: '40,000+', candidate: 'Abhishek Banerjee', regionId: 'south', history: [35000, 38000, 40000] },
+      { id: 'singur', name: 'Singur', type: 'Swing', leading: 'TMC', margin: '5,000+', candidate: 'Bechara Manna', regionId: 'south', history: [2000, 3500, 5000] },
     ],
     parties: [
       { id: 'tmc', name: 'AITC/TMC', color: '#31a354', seats: 165, voteShare: 45.2, momentum: 0, factor: 'Welfare Delivery', factorImpact: 88 },
@@ -256,9 +268,9 @@ const STATE_CONFIGS: Record<string, {
       { id: 'barak', label: 'Barak Valley', total: 15, partySeats: { bjp: 10, congress: 4, aiudf: 1 } },
     ],
     constituencies: [
-      { id: 'jalukbari', name: 'Jalukbari', type: 'Safe', leading: 'BJP', margin: '100,000+', candidate: 'Himanta Biswa Sarma', history: [90000, 95000, 100000] },
-      { id: 'majuli', name: 'Majuli', type: 'Star', leading: 'BJP', margin: '20,000+', candidate: 'Bhuban Gam', history: [15000, 18000, 20000] },
-      { id: 'titabar', name: 'Titabar', type: 'Safe', leading: 'Congress', margin: '15,000+', candidate: 'Bhaskar Jyoti Baruah', history: [12000, 14000, 15000] },
+      { id: 'jalukbari', name: 'Jalukbari', type: 'Safe', leading: 'BJP', margin: '100,000+', candidate: 'Himanta Biswa Sarma', regionId: 'brahmaputra', history: [90000, 95000, 100000] },
+      { id: 'majuli', name: 'Majuli', type: 'Star', leading: 'BJP', margin: '20,000+', candidate: 'Bhuban Gam', regionId: 'brahmaputra', history: [15000, 18000, 20000] },
+      { id: 'titabar', name: 'Titabar', type: 'Safe', leading: 'Congress', margin: '15,000+', candidate: 'Bhaskar Jyoti Baruah', regionId: 'brahmaputra', history: [12000, 14000, 15000] },
     ],
     parties: [
       { id: 'bjp', name: 'BJP+', color: '#FF9933', seats: 75, voteShare: 44.5, momentum: 0, factor: 'Infrastructure', factorImpact: 82 },
@@ -590,11 +602,13 @@ export default function App() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                    {stateData.constituencies?.filter(c => 
-                      c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                      c.candidate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      c.leading.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).map((c) => (
+                    {stateData.constituencies?.filter(c => {
+                      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                           c.candidate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                           c.leading.toLowerCase().includes(searchTerm.toLowerCase());
+                      const matchesRegion = activeRegion === 'all' || (c as any).regionId === activeRegion;
+                      return matchesSearch && matchesRegion;
+                    }).map((c) => (
                       <div 
                         key={c.id} 
                         onClick={() => setSelectedConstituencyId(c.id)}
@@ -646,7 +660,7 @@ export default function App() {
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-[9px] uppercase text-brand-text/40">Leading</span>
-                            <span className="text-xs font-serif italic text-brand-accent">{c.leading}</span>
+                            <span className="text-xs font-serif italic" style={{ color: stateData.parties.find(p => p.id === c.leading.toLowerCase() || p.name.includes(c.leading))?.color || 'inherit' }}>{c.leading}</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-[9px] uppercase text-brand-text/40">Est. Margin</span>
@@ -1106,15 +1120,15 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* regional party split - new section */}
+                    {/* Regional Party Split Chart */}
                     <div className="bg-white border border-brand-text/5 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
                       <div className="flex justify-between items-center mb-8">
                         <div className="flex items-center gap-2">
                           <MapIcon size={16} />
-                          <h3 className="text-xs font-bold uppercase tracking-wider">Regional Party Split</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wider">Regional Seat Distribution</h3>
                         </div>
                       </div>
-                      <div className="h-[400px] w-full">
+                      <div className="h-[300px] w-full mb-8">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart 
                             layout="vertical"
@@ -1141,6 +1155,34 @@ export default function App() {
                             ))}
                           </BarChart>
                         </ResponsiveContainer>
+                      </div>
+
+                      {/* District-wise / Region-wise Data Table */}
+                      <div className="overflow-x-auto border-t border-brand-text/5 pt-8">
+                        <table className="w-full text-[10px] uppercase tracking-widest text-left">
+                          <thead>
+                            <tr className="border-b border-brand-text/10">
+                              <th className="pb-4 font-bold opacity-40">Territory / Region</th>
+                              {stateData.parties.map(p => (
+                                <th key={p.id} className="pb-4 font-bold text-right" style={{ color: p.color }}>{p.id}</th>
+                              ))}
+                              <th className="pb-4 font-bold text-right opacity-40">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-brand-text/5">
+                            {stateData.regions.slice(1).map(region => (
+                              <tr key={region.id} className={`hover:bg-brand-text/5 transition-colors ${activeRegion === region.id ? 'bg-brand-accent/5' : ''}`}>
+                                <td className="py-4 font-bold">{region.label}</td>
+                                {stateData.parties.map(p => (
+                                  <td key={p.id} className="py-4 text-right font-mono">
+                                    {region.partySeats?.[p.id] || 0}
+                                  </td>
+                                ))}
+                                <td className="py-4 text-right font-bold opacity-40">{region.total}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
@@ -1193,17 +1235,21 @@ export default function App() {
                         </button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(stateData.constituencies?.filter(c => c.type === 'Star') || []).slice(0, 4).map((c) => (
+                        {(stateData.constituencies?.filter(c => {
+                          const isStar = c.type === 'Star';
+                          const matchesRegion = activeRegion === 'all' || (c as any).regionId === activeRegion;
+                          return isStar && matchesRegion;
+                        }) || []).slice(0, 4).map((c) => (
                           <div key={c.id} className="p-4 border border-brand-text/5 bg-brand-bg/10 flex justify-between items-center group cursor-pointer hover:border-brand-accent/30 transition-colors" onClick={() => handleOpenDeepDive(c.id)}>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[8px] uppercase font-bold ${c.leading === 'DMK' ? 'text-red-600' : 'text-brand-accent'}`}>{c.type}</span>
+                                <span className="text-[8px] uppercase font-bold" style={{ color: stateData.parties.find(p => p.id === c.leading.toLowerCase() || p.name.includes(c.leading))?.color || '#666' }}>{c.type}</span>
                                 <h4 className="text-sm font-bold">{c.name}</h4>
                               </div>
                               <p className="text-[10px] text-brand-text/40 italic">{c.candidate}</p>
                             </div>
                             <div className="text-right">
-                              <span className={`text-[10px] font-serif italic block leading-none ${c.leading === 'DMK' ? 'text-red-600' : 'text-brand-text'}`}>{c.leading}</span>
+                              <span className="text-[10px] font-serif italic block leading-none" style={{ color: stateData.parties.find(p => p.id === c.leading.toLowerCase() || p.name.includes(c.leading))?.color || 'inherit' }}>{c.leading}</span>
                               <span className="text-[8px] uppercase tracking-tighter text-brand-text/30 font-mono">+{c.margin}</span>
                             </div>
                           </div>
