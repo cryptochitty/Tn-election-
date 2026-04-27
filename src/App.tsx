@@ -43,6 +43,8 @@ const STATE_CONFIGS: Record<string, {
   demographics: { label: string; value: string }[];
   totalSeats: number;
   majority: number;
+  totalElectorate: number;
+  defaultTurnout: number;
   parties: any[];
   regions: { id: string; label: string; total: number; partySeats?: Record<string, number> }[];
   constituencies?: { id: string; name: string; type: 'Star' | 'Swing' | 'Safe'; leading: string; margin: string; candidate: string; history?: number[] }[];
@@ -68,43 +70,112 @@ const STATE_CONFIGS: Record<string, {
     demographics: [
       { label: 'Urbanization', value: '48.4%' },
       { label: 'Literacy Rate', value: '80.1%' },
+      { label: 'Projected Turnout', value: '74.5%' },
       { label: 'Key Groups', value: 'MBC, SC, BC' },
     ],
     totalSeats: 234,
     majority: 118,
+    totalElectorate: 63000000,
+    defaultTurnout: 74.5,
     regions: [
       { id: 'all', label: 'All Regions', total: 234 },
-      { id: 'kongu', label: 'Kongu / West', total: 52, partySeats: { dmk: 30, aiadmk: 15, tvk: 3, bjp: 4 } },
+      { id: 'kongu', label: 'Kongu / West', total: 52, partySeats: { dmk: 30, aiadmk: 19, tvk: 3 } },
       { id: 'chennai', label: 'Greater Chennai', total: 31, partySeats: { dmk: 26, aiadmk: 2, tvk: 3 } },
       { id: 'delta', label: 'Kaveri Delta', total: 38, partySeats: { dmk: 31, aiadmk: 5, tvk: 2 } },
       { id: 'south', label: 'Deep South', total: 68, partySeats: { dmk: 45, aiadmk: 14, tvk: 7, others: 2 } },
-      { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 4, tvk: 6, bjp: 6, ntk: 7 } },
+      { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 10, tvk: 6, ntk: 7 } },
     ],
     constituencies: [
       { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', history: [12000, 14000, 15000] },
       { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', history: [40000, 42000, 45000] },
       { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', history: [1000, 3000, 5000] },
-      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'BJP', margin: '1,200+', candidate: 'Vanathi Srinivasan', history: [2500, 1800, 1200] },
+      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'AIADMK', margin: '1,200+', candidate: 'BJP-Coalition', history: [2500, 1800, 1200] },
       { id: 'edelapuram', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', history: [28000, 29000, 30000] },
     ],
     parties: [
-      { id: 'dmk', name: 'DMK Alliance', color: '#EC1C24', seats: 154, voteShare: 42.0, momentum: 0, factor: 'Welfare Schemes', factorImpact: 85 },
-      { id: 'aiadmk', name: 'AIADMK Alliance', color: '#008136', seats: 40, voteShare: 26.0, momentum: 0, factor: 'Rural Consolidation', factorImpact: 72 },
-      { id: 'tvk', name: 'TVK (Vijay)', color: '#F7E017', seats: 21, voteShare: 15.0, momentum: 0, factor: 'Youth Surge', factorImpact: 90 },
-      { id: 'bjp', name: 'BJP', color: '#FF9933', seats: 10, voteShare: 8.0, momentum: 0, factor: 'Economic Reform', factorImpact: 58 },
-      { id: 'ntk', name: 'NTK', color: '#FFCC00', seats: 7, voteShare: 6.0, momentum: 0, factor: 'Identity Politics', factorImpact: 45 },
-      { id: 'others', name: 'Others', color: '#666666', seats: 2, voteShare: 3.0, momentum: 0, factor: 'Localized Issues', factorImpact: 30 },
+      { 
+        id: 'dmk', 
+        name: 'DMK Front (INC, VCK, DMDK, Left)', 
+        color: '#EC1C24', 
+        seats: 154, 
+        voteShare: 42.0, 
+        momentum: 0, 
+        factor: 'Welfare Schemes', 
+        factorImpact: 85,
+        migration: [
+          { label: 'From AIADMK', value: 15, type: 'gain' },
+          { label: 'To TVK', value: -12, type: 'loss' },
+          { label: 'New Voters', value: 18, type: 'gain' }
+        ]
+      },
+      { 
+        id: 'aiadmk', 
+        name: 'AIADMK Front (BJP, PMK)', 
+        color: '#008136', 
+        seats: 50, 
+        voteShare: 34.0, 
+        momentum: 0, 
+        factor: 'Coalition Strength', 
+        factorImpact: 78,
+        migration: [
+          { label: 'To DMK', value: -10, type: 'loss' },
+          { label: 'To TVK', value: -20, type: 'loss' },
+          { label: 'Alliance Gain', value: 8, type: 'gain' }
+        ]
+      },
+      { 
+        id: 'tvk', 
+        name: 'TVK (Vijay)', 
+        color: '#F7E017', 
+        seats: 21, 
+        voteShare: 15.0, 
+        momentum: 0, 
+        factor: 'Youth Surge', 
+        factorImpact: 90,
+        migration: [
+          { label: 'From NTK', value: 30, type: 'gain' },
+          { label: 'From AIADMK-BJP', value: 25, type: 'gain' },
+          { label: 'From DMK', value: 20, type: 'gain' }
+        ]
+      },
+      { 
+        id: 'ntk', 
+        name: 'NTK', 
+        color: '#FFCC00', 
+        seats: 7, 
+        voteShare: 6.0, 
+        momentum: 0, 
+        factor: 'Identity Politics', 
+        factorImpact: 45,
+        migration: [
+          { label: 'To TVK', value: -40, type: 'loss' },
+          { label: 'Core Retention', value: 55, type: 'neutral' }
+        ]
+      },
+      { 
+        id: 'others', 
+        name: 'Others', 
+        color: '#666666', 
+        seats: 2, 
+        voteShare: 3.0, 
+        momentum: 0, 
+        factor: 'Localized Issues', 
+        factorImpact: 30,
+        migration: [
+          { label: 'Independents', value: 45, type: 'neutral' }
+        ]
+      },
     ],
     trendData: [
-      { date: 'Jan 26', dmk: 135, aiadmk: 50, tvk: 15 },
-      { date: 'Feb 26', dmk: 140, aiadmk: 48, tvk: 20 },
-      { date: 'Mar 26', dmk: 148, aiadmk: 45, tvk: 18 },
-      { date: 'Apr 26', dmk: 154, aiadmk: 40, tvk: 21 },
+      { date: 'Jan 26', dmk: 135, aiadmk: 60, tvk: 15 },
+      { date: 'Feb 26', dmk: 140, aiadmk: 58, tvk: 20 },
+      { date: 'Mar 26', dmk: 148, aiadmk: 55, tvk: 18 },
+      { date: 'Apr 26', dmk: 154, aiadmk: 50, tvk: 21 },
     ],
     pollData: {
-      prePoll: { dmk: 154, aiadmk: 40, tvk: 15, bjp: 12 },
-      postPoll: { dmk: 148, aiadmk: 46, tvk: 22, bjp: 8 },
-      exitPoll: { dmk: 156, aiadmk: 38, tvk: 18, bjp: 10 },
+      prePoll: { dmk: 154, aiadmk: 52, tvk: 15 },
+      postPoll: { dmk: 148, aiadmk: 54, tvk: 22 },
+      exitPoll: { dmk: 156, aiadmk: 48, tvk: 18 },
     },
     socialTrends: [
       { platform: 'X / Twitter', mentions: '1.2M', sentiment: 'Positive', trendingTopic: '#DMKVictory2026', icon: Zap },
@@ -120,10 +191,13 @@ const STATE_CONFIGS: Record<string, {
     demographics: [
       { label: 'Rural Population', value: '68.1%' },
       { label: 'Minority Share', value: '27.0%' },
+      { label: 'Projected Turnout', value: '82.0%' },
       { label: 'Key Groups', value: 'Matua, Tribal, General' },
     ],
     totalSeats: 294,
     majority: 148,
+    totalElectorate: 74000000,
+    defaultTurnout: 82.0,
     regions: [
       { id: 'all', label: 'Entire State', total: 294 },
       { id: 'north', label: 'North Bengal', total: 54, partySeats: { tmc: 20, bjp: 30, left: 4 } },
@@ -166,10 +240,13 @@ const STATE_CONFIGS: Record<string, {
     demographics: [
       { label: 'Forest Cover', value: '34.2%' },
       { label: 'Diverse Tribes', value: '12.4% ST' },
+      { label: 'Projected Turnout', value: '78.5%' },
       { label: 'Key Regions', value: 'Brahmaputra/Barak' },
     ],
     totalSeats: 126,
     majority: 64,
+    totalElectorate: 24000000,
+    defaultTurnout: 78.5,
     regions: [
       { id: 'all', label: 'All Regions', total: 126 },
       { id: 'brahmaputra', label: 'Brahmaputra Valley', total: 111, partySeats: { bjp: 65, congress: 38, aiudf: 7, others: 1 } },
@@ -215,6 +292,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSources, setShowSources] = useState(false);
   const [syncTime, setSyncTime] = useState(new Date());
+  const [turnout, setTurnout] = useState(74.5);
   
   // Dynamic sync time update
   useEffect(() => {
@@ -263,6 +341,7 @@ export default function App() {
   // Sync state data when selection changes
   useEffect(() => {
     setStateData(STATE_CONFIGS[selectedStateId]);
+    setTurnout(STATE_CONFIGS[selectedStateId].defaultTurnout);
     setActiveRegion('all');
     setSelectedConstituencyId(null);
     setSearchTerm('');
@@ -371,7 +450,10 @@ export default function App() {
     });
   };
 
-  const resetSimulation = () => setStateData(STATE_CONFIGS[selectedStateId]);
+  const resetSimulation = () => {
+    setStateData(STATE_CONFIGS[selectedStateId]);
+    setTurnout(STATE_CONFIGS[selectedStateId].defaultTurnout);
+  };
 
   const leadingParty = [...stateData.parties].sort((a, b) => b.seats - a.seats)[0];
   const activeRegionData = stateData.regions.find(r => r.id === activeRegion);
@@ -1081,10 +1163,45 @@ export default function App() {
                           {stateData.demographics.map((demo, idx) => (
                             <div key={idx} className="flex justify-between items-center bg-brand-text/5 p-2 px-3">
                               <span className="text-[9px] uppercase font-medium">{demo.label}</span>
-                              <span className="text-[10px] font-serif italic text-brand-text">{demo.value}</span>
+                              <span className="text-[10px] font-serif italic text-brand-text">
+                                {demo.label === 'Projected Turnout' ? `${turnout.toFixed(1)}%` : demo.value}
+                              </span>
                             </div>
                           ))}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Voter Migration Analysis */}
+                    <div className="bg-white border border-brand-text/10 p-8 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                      <header className="mb-8">
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Intelligence</span>
+                        <h3 className="text-xl font-serif italic mb-2">Voter Migration Patterns.</h3>
+                        <p className="text-[10px] text-brand-text/40 italic">Where growth and drainage are projected to originate.</p>
+                      </header>
+
+                      <div className="space-y-6">
+                        {stateData.parties.slice(0, 5).filter(p => p.migration).map((party) => (
+                          <div key={party.id} className="pb-4 border-b border-brand-text/5 last:border-0">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-2 h-2" style={{ backgroundColor: party.color }} />
+                              <span className="text-[11px] font-bold uppercase tracking-wider">{party.name}</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-2">
+                              {party.migration.map((mig: any, mIdx: number) => (
+                                <div key={mIdx} className="flex flex-col gap-1">
+                                  <div className="flex justify-between items-center bg-brand-text/5 p-2 border-l-2" style={{ borderColor: mig.type === 'gain' ? '#22c55e' : mig.type === 'loss' ? '#ef4444' : '#6b7280' }}>
+                                    <span className="text-[10px] font-medium">{mig.label}</span>
+                                    <span className={`text-[10px] font-mono font-bold ${mig.type === 'gain' ? 'text-green-600' : mig.type === 'loss' ? 'text-red-600' : 'opacity-40'}`}>
+                                      {mig.type === 'gain' ? '+' : mig.type === 'loss' ? '-' : ''}{Math.abs(mig.value)}%
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -1102,11 +1219,37 @@ export default function App() {
               >
                 <header className="mb-12">
                    <span className="text-[10px] uppercase tracking-[0.3em] text-brand-text/40 mb-2 block">Prediction Engine</span>
-                   <h2 className="text-4xl font-serif italic mb-4">Vote Share Simulator.</h2>
-                   <p className="text-sm text-brand-text/50 max-w-xl italic">
-                     Adjust party vote share percentage to see how shifts affect final seat projections. This model uses a non-linear seat-vote swing algorithm.
-                   </p>
-                </header>
+                    <h2 className="text-4xl font-serif italic mb-4">Vote Share Simulator.</h2>
+                    <p className="text-sm text-brand-text/50 max-w-xl italic mb-8">
+                      Adjust party vote share and voter turnout to see how shifts affect final seat projections and total vote counts.
+                    </p>
+
+                    <div className="bg-brand-text/5 p-6 border border-brand-text/10 mb-8">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-3">
+                          <Users size={16} className="text-brand-accent" />
+                          <span className="text-xs font-bold uppercase">Estimated Voter Turnout</span>
+                        </div>
+                        <span className="text-xs font-mono font-bold">{turnout.toFixed(1)}%</span>
+                      </div>
+                      <input 
+                        type="range"
+                        min="50"
+                        max="100"
+                        step="0.1"
+                        value={turnout}
+                        onChange={(e) => setTurnout(parseFloat(e.target.value))}
+                        className="w-full h-1 bg-brand-text/10 appearance-none cursor-pointer accent-brand-accent"
+                      />
+                      <div className="flex justify-between text-[9px] opacity-40 uppercase tracking-widest mt-2">
+                        <span>50% Pool</span>
+                        <span>100% Pool</span>
+                      </div>
+                      <p className="mt-4 text-[10px] text-brand-text/40 italic">
+                        Total Pool: {Math.round(stateData.totalElectorate * (turnout / 100)).toLocaleString()} votes
+                      </p>
+                    </div>
+                 </header>
 
                 <div className="grid md:grid-cols-2 gap-12">
                   <div className="space-y-8">
@@ -1117,9 +1260,14 @@ export default function App() {
                             <div className="w-3 h-3" style={{ backgroundColor: party.color }} />
                             <span className="text-xs font-bold uppercase">{party.name}</span>
                           </div>
-                          <span className="text-xs font-mono font-bold">
-                            {party.voteShare.toFixed(1)}%
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs font-mono font-bold">
+                              {party.voteShare.toFixed(1)}%
+                            </span>
+                            <span className="text-[9px] font-mono opacity-40">
+                              {Math.round((stateData.totalElectorate * (turnout / 100)) * (party.voteShare / 100)).toLocaleString()} Votes
+                            </span>
+                          </div>
                         </div>
                         <input 
                           type="range"
@@ -1153,9 +1301,31 @@ export default function App() {
                     <div className="h-[1px] bg-brand-text/10 w-1/2 mx-auto" />
                     <div>
                       <span className="text-[9px] uppercase tracking-widest text-brand-text/40 block mb-2">Threshold Analysis</span>
-                      <div className="text-xl font-serif italic text-brand-text">
+                      <div className="text-xl font-serif italic text-brand-text mb-8">
                         {leadingParty.seats >= stateData.majority ? 'Majority Threshold Reached' : 'Collaborative Governance Needed'}
                       </div>
+                    </div>
+
+                    {/* Simulation Specific Migration Insights */}
+                    <div className="pt-8 border-t border-brand-text/5 text-left">
+                       <span className="text-[9px] uppercase tracking-widest text-brand-text/40 block mb-4">Underlying Voter Shift</span>
+                       <div className="space-y-4">
+                          {stateData.parties.filter(p => Math.abs(p.momentum) > 0).slice(0, 3).map((p: any) => (
+                            <div key={p.id} className="p-3 bg-brand-text/5 border-l-2" style={{ borderColor: p.color }}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-[10px] font-bold uppercase">{p.name} Move</span>
+                                <span className={`text-[10px] font-mono ${p.momentum > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {p.momentum > 0 ? '+' : ''}{p.momentum.toFixed(1)}%
+                                </span>
+                              </div>
+                              <p className="text-[9px] text-brand-text/40 italic">
+                                {p.momentum > 0 
+                                  ? `Gaining primary traction from ${p.migration?.[0]?.label || 'neutral undecided blocks'}.` 
+                                  : `Losing substantial ground to ${p.migration?.find((m: any) => m.type === 'loss')?.label || 'rival ideological camps'}.`}
+                              </p>
+                            </div>
+                          ))}
+                       </div>
                     </div>
                   </div>
                 </div>
