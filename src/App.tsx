@@ -298,9 +298,9 @@ const STATE_CONFIGS: Record<string, {
   },
   kerala: {
     name: 'Kerala',
-    description: 'Kerala 2026 is poised to break the 5-decade alternating pattern, with LDF seeking a rare back-to-back mandate. The UDF is banking on anti-incumbency and the INDIA bloc momentum, while BJP-NDA targets its first double-digit tally.',
-    insight: 'Central Kerala (Thrissur–Ernakulam belt) is the swing zone. IUML consolidation in Malabar is the critical variable that could tip UDF past majority. BJP is eyeing 10+ seats through polarisation in coastal constituencies.',
-    history: 'Kerala politics has rotated between LDF and UDF every 5 years since 1982 — the only exception was 2021 when CPI-M-led LDF won a historic consecutive term. The Left has governed from 2016 to 2026.',
+    description: 'Kerala 2026 is a historic election — LDF is attempting an unprecedented third consecutive term, having already broken the alternating pattern in 2021. The UDF is banking on anti-incumbency after 10 years of Left rule, while BJP-NDA, which drew a blank in 2021, is targeting its first double-digit tally.',
+    insight: 'Central Kerala (Thrissur–Ernakulam belt) is the swing zone. IUML consolidation in Malabar is the critical variable that could tip UDF past majority. BJP is targeting Nemom (Rajeev Chandrasekhar) and coastal seats to finally open its account after a 2021 washout.',
+    history: 'Kerala politics alternated between LDF and UDF every 5 years since 1982 until 2021, when CPI-M-led LDF won a historic back-to-back mandate (99 seats). BJP won its only assembly seat in 2016 (Nemom) but lost it in 2021, leaving zero seats. In 2026, LDF seeks a third straight term — unprecedented in the state\'s history.',
     demographics: [
       { label: 'Literacy Rate', value: '96.2%' },
       { label: 'Urbanization', value: '47.7%' },
@@ -320,13 +320,13 @@ const STATE_CONFIGS: Record<string, {
     ],
     constituencies: [
       { id: 'pinarayi', name: 'Dharmadom (CM)', type: 'Safe', leading: 'LDF', margin: '20,000+', candidate: 'Pinarayi Vijayan', regionId: 'malabar', history: [16000, 18000, 20000] },
-      { id: 'nemom', name: 'Nemom', type: 'Safe', leading: 'BJP', margin: '12,000+', candidate: 'O. Rajagopal', regionId: 'south', history: [8000, 10000, 12000] },
+      { id: 'nemom', name: 'Nemom', type: 'Star', leading: 'LDF', margin: '4,000+', candidate: 'V. Sivankutty (CPI-M) vs Rajeev Chandrasekhar (BJP)', regionId: 'south', history: [8671, -3949, 4000] },
       { id: 'thrissur', name: 'Thrissur', type: 'Swing', leading: 'LDF', margin: '3,500+', candidate: 'K. Radhakrishnan', regionId: 'thrissur', history: [5000, 4000, 3500] },
-      { id: 'vatakara', name: 'Vatakara', type: 'Safe', leading: 'UDF', margin: '18,000+', candidate: 'Shafi Parambil', regionId: 'malabar', history: [14000, 16000, 18000] },
+      { id: 'vatakara', name: 'Vatakara', type: 'Safe', leading: 'LDF', margin: '65,000+', candidate: 'K.K. Rema (RMPI/LDF)', regionId: 'malabar', history: [50000, 60000, 65000] },
       { id: 'thiruvananthapuram', name: 'Thiruvananthapuram', type: 'Swing', leading: 'UDF', margin: '2,000+', candidate: 'V.S. Sivakumar', regionId: 'south', history: [4000, 3000, 2000] },
       { id: 'ernakulam', name: 'Ernakulam', type: 'Swing', leading: 'LDF', margin: '4,500+', candidate: 'T.J. Vinod', regionId: 'central', history: [3000, 4000, 4500] },
       { id: 'kozhikode-north', name: 'Kozhikode North', type: 'Safe', leading: 'UDF', margin: '22,000+', candidate: 'Ahammad Devarkovil', regionId: 'malabar', history: [18000, 20000, 22000] },
-      { id: 'palakkad', name: 'Palakkad', type: 'Star', leading: 'BJP', margin: '5,000+', candidate: 'E. Sreedharan', regionId: 'thrissur', history: [2000, 3500, 5000] },
+      { id: 'palakkad', name: 'Palakkad', type: 'Swing', leading: 'UDF', margin: '3,900+', candidate: 'Shafi Parambil (INC)', regionId: 'thrissur', history: [5000, 3500, 3900] },
     ],
     parties: [
       {
@@ -421,12 +421,13 @@ const STATE_CONFIGS: Record<string, {
     defaultTurnout: 78.5,
     regions: [
       { id: 'all', label: 'All Regions', total: 30 },
-      { id: 'puducherry', label: 'Puducherry', total: 24, partySeats: { ainrc: 11, inc: 6, dmk: 5, others: 2 } },
+      { id: 'puducherry', label: 'Puducherry', total: 23, partySeats: { ainrc: 10, inc: 6, dmk: 5, others: 2 } },
       { id: 'karaikal', label: 'Karaikal', total: 5, partySeats: { ainrc: 3, dmk: 2 } },
-      { id: 'mahe', label: 'Mahe & Yanam', total: 1, partySeats: { inc: 1 } },
+      { id: 'mahe', label: 'Mahe', total: 1, partySeats: { inc: 1 } },
+      { id: 'yanam', label: 'Yanam', total: 1, partySeats: { others: 1 } },
     ],
     constituencies: [
-      { id: 'indira-nagar', name: 'Indira Nagar', type: 'Safe', leading: 'AINRC', margin: '8,000+', candidate: 'N. Rangasamy', regionId: 'puducherry', history: [5000, 6500, 8000] },
+      { id: 'thattanchavady', name: 'Thattanchavady', type: 'Safe', leading: 'AINRC', margin: '5,456', candidate: 'N. Rangasamy (CM)', regionId: 'puducherry', history: [3000, 4200, 5456] },
       { id: 'ariyankuppam', name: 'Ariyankuppam', type: 'Swing', leading: 'DMK', margin: '1,500+', candidate: 'A. John Kumar', regionId: 'puducherry', history: [3000, 2200, 1500] },
       { id: 'nellithope', name: 'Nellithope', type: 'Star', leading: 'Congress', margin: '3,000+', candidate: 'A. Namassivayam', regionId: 'puducherry', history: [1000, 2000, 3000] },
       { id: 'karaikal-north', name: 'Karaikal North', type: 'Safe', leading: 'AINRC', margin: '6,000+', candidate: 'D. Namboothiri', regionId: 'karaikal', history: [4000, 5000, 6000] },
