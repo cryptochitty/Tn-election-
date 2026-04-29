@@ -322,6 +322,43 @@ export default function App() {
   
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [liveResultsStatus, setLiveResultsStatus] = useState<'idle' | 'live' | 'error'>('idle');
+
+  // Live results polling — hits Render API every 60s, merges declared results into stateData
+  useEffect(() => {
+    const RENDER_API = 'https://ai-video-generator-bqm8.onrender.com/api/tn-results';
+    const applyResults = (apiResults: {id: string; winner: string; winnerCandidate: string; actualMargin: string; predictionCorrect: boolean | null}[]) => {
+      if (!apiResults.length) return;
+      setStateData(prev => {
+        if (!prev.constituencies) return prev;
+        const updated = prev.constituencies.map(c => {
+          const hit = apiResults.find(r => r.id === c.id);
+          if (!hit) return c;
+          const predictionCorrect = hit.predictionCorrect !== null
+            ? hit.predictionCorrect
+            : hit.winner === c.leading;
+          return { ...c, result: { winner: hit.winner, winnerCandidate: hit.winnerCandidate, actualMargin: hit.actualMargin, predictionCorrect } };
+        });
+        return { ...prev, constituencies: updated };
+      });
+      setLiveResultsStatus('live');
+    };
+
+    const poll = async () => {
+      try {
+        const res = await fetch(RENDER_API);
+        if (!res.ok) throw new Error('non-200');
+        const json = await res.json();
+        if (json.ok && json.results?.length) applyResults(json.results);
+      } catch {
+        setLiveResultsStatus('error');
+      }
+    };
+
+    poll(); // immediate on mount
+    const timer = setInterval(poll, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleAiAnalysis = async (constituencyName: string) => {
     setIsAnalyzing(true);
@@ -1048,9 +1085,19 @@ export default function App() {
             </div>
             <span className="text-[8px] text-brand-text/50 font-mono">Synced: {syncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
-          <div className="hidden lg:flex px-4 py-2 border border-brand-text/10 rounded-full text-[9px] tracking-widest uppercase items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            Live Projections Active
+          <div className={`hidden lg:flex px-4 py-2 border rounded-full text-[9px] tracking-widest uppercase items-center gap-2 ${
+            liveResultsStatus === 'live' ? 'border-green-500/40 text-green-600' :
+            liveResultsStatus === 'error' ? 'border-red-400/40 text-red-500' :
+            'border-brand-text/10 text-brand-text/50'
+          }`}>
+            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+              liveResultsStatus === 'live' ? 'bg-green-500' :
+              liveResultsStatus === 'error' ? 'bg-red-400' :
+              'bg-brand-text/30'
+            }`} />
+            {liveResultsStatus === 'live' ? 'Live Results Active' :
+             liveResultsStatus === 'error' ? 'Results Unavailable' :
+             'Awaiting Results'}
           </div>
           <button className="p-2 hover:bg-brand-text/5 rounded-full transition-colors">
             <LayoutDashboard size={18} />
