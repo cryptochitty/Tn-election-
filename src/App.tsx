@@ -301,6 +301,7 @@ export default function App() {
   const [selectedStateId, setSelectedStateId] = useState('tamilnadu');
   const [activeTab, setActiveTab] = useState<'overview' | 'simulator' | 'trends'>('overview');
   const [activeRegion, setActiveRegion] = useState('all');
+  const [deepDiveRegion, setDeepDiveRegion] = useState('all');  // independent filter inside modal
   const [stateData, setStateData] = useState(STATE_CONFIGS[selectedStateId]);
   const [showDeepDive, setShowDeepDive] = useState(false);
   const [selectedConstituencyId, setSelectedConstituencyId] = useState<string | null>(null);
@@ -416,6 +417,7 @@ export default function App() {
     setStateData(STATE_CONFIGS[selectedStateId]);
     setTurnout(STATE_CONFIGS[selectedStateId].defaultTurnout);
     setActiveRegion('all');
+    setDeepDiveRegion('all');
     setSelectedConstituencyId(null);
     setSearchTerm('');
     setAiAnalysis(null);
@@ -605,36 +607,55 @@ export default function App() {
                     </div>
                   </div>
 
-                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-brand-text/5 pb-2 mt-8">Regional Dynamics</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-brand-text/5 pb-2 mt-8">Filter by Region</h4>
+                  <div
+                    onClick={() => { setDeepDiveRegion('all'); setSelectedConstituencyId(null); }}
+                    className={`p-3 border cursor-pointer transition-all mb-1 ${deepDiveRegion === 'all' ? 'border-brand-accent bg-brand-accent/5' : 'border-brand-text/5 hover:border-brand-text/20'}`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium uppercase">All Regions</span>
+                      <span className="text-[10px] opacity-40">{stateData.totalSeats} Seats</span>
+                    </div>
+                  </div>
                   {stateData.regions.slice(1).map((r: any) => (
-                    <div key={r.id} className="p-4 border border-brand-text/5 hover:border-brand-text/20 transition-colors">
+                    <div
+                      key={r.id}
+                      onClick={() => { setDeepDiveRegion(r.id); setSelectedConstituencyId(null); }}
+                      className={`p-3 border cursor-pointer transition-all ${deepDiveRegion === r.id ? 'border-brand-accent bg-brand-accent/5' : 'border-brand-text/5 hover:border-brand-text/20'}`}
+                    >
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs font-medium uppercase">{r.label}</span>
                         <span className="text-[10px] opacity-40">{r.total} Seats</span>
                       </div>
                       <div className="w-full h-1 bg-brand-text/5">
-                        <div className="h-full bg-brand-text/20" style={{ width: `${(r.total/stateData.totalSeats)*100}%` }} />
+                        <div className={`h-full transition-all ${deepDiveRegion === r.id ? 'bg-brand-accent/40' : 'bg-brand-text/20'}`} style={{ width: `${(r.total/stateData.totalSeats)*100}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <div className="md:col-span-8 space-y-6">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-brand-text/5 pb-4 gap-4">
-                    <div>
+                  <div className="flex flex-col gap-3 border-b border-brand-text/5 pb-4">
+                    <div className="flex justify-between items-center">
                       <h4 className="text-xs font-bold uppercase tracking-widest">Star & Swing Constituencies</h4>
-                      <span className="text-[10px] text-brand-text/40 uppercase tracking-widest">{stateData.constituencies?.length || 0} Key Battles</span>
+                      {deepDiveRegion !== 'all' && (
+                        <button onClick={() => { setDeepDiveRegion('all'); setSelectedConstituencyId(null); }} className="text-[8px] uppercase tracking-widest text-brand-accent font-bold underline">
+                          Clear Region
+                        </button>
+                      )}
                     </div>
-                    
-                    <div className="relative w-full md:w-64">
+                    <div className="relative">
                       <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/30" />
-                      <input 
+                      <input
                         type="text"
-                        placeholder="SEARCH CONSTITUENCY..."
+                        placeholder="Search by name, candidate, party, type (star/swing/safe), winner..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-brand-text/5 border border-brand-text/10 px-9 py-2 text-[10px] uppercase tracking-widest focus:outline-none focus:border-brand-accent transition-colors"
+                        className="w-full bg-brand-text/5 border border-brand-text/10 pl-9 pr-8 py-2 text-[10px] uppercase tracking-widest focus:outline-none focus:border-brand-accent transition-colors"
                       />
+                      {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-text/30 hover:text-brand-text text-xs font-bold">✕</button>
+                      )}
                     </div>
                   </div>
                   
@@ -666,14 +687,35 @@ export default function App() {
                     );
                   })()}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                    {stateData.constituencies?.filter(c => {
-                      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                           c.candidate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                           c.leading.toLowerCase().includes(searchTerm.toLowerCase());
-                      const matchesRegion = activeRegion === 'all' || (c as any).regionId === activeRegion;
+                  {(() => {
+                    const q = searchTerm.toLowerCase();
+                    const filtered = stateData.constituencies?.filter(c => {
+                      const matchesSearch = !q ||
+                        c.name.toLowerCase().includes(q) ||
+                        c.candidate.toLowerCase().includes(q) ||
+                        c.leading.toLowerCase().includes(q) ||
+                        c.type.toLowerCase().includes(q) ||
+                        (c.result?.winner.toLowerCase().includes(q)) ||
+                        (c.result?.winnerCandidate.toLowerCase().includes(q)) ||
+                        (q === 'upset' && c.result && !c.result.predictionCorrect) ||
+                        (q === 'correct' && c.result?.predictionCorrect) ||
+                        (q === 'declared' && !!c.result) ||
+                        (q === 'pending' && !c.result);
+                      const matchesRegion = deepDiveRegion === 'all' || (c as any).regionId === deepDiveRegion;
                       return matchesSearch && matchesRegion;
-                    }).map((c) => (
+                    }) || [];
+                    const regionLabel = stateData.regions.find(r => r.id === deepDiveRegion)?.label;
+                    return (
+                      <>
+                        <div className="flex items-center justify-between text-[9px] uppercase tracking-widest text-brand-text/40 mb-2">
+                          <span>{filtered.length} of {stateData.constituencies?.length || 0} constituencies</span>
+                          {regionLabel && deepDiveRegion !== 'all' && <span className="font-bold text-brand-accent">{regionLabel}</span>}
+                        </div>
+                        {filtered.length === 0 && (
+                          <div className="col-span-2 py-12 text-center text-brand-text/30 text-xs italic">No constituencies match "{searchTerm}"</div>
+                        )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                    {filtered.map((c) => (
                       <div 
                         key={c.id} 
                         onClick={() => setSelectedConstituencyId(c.id)}
@@ -759,6 +801,9 @@ export default function App() {
                       </div>
                     ))}
                   </div>
+                      </>
+                    );
+                  })()}
 
                   {selectedConstituencyId && (
                     <motion.div 
