@@ -50,7 +50,7 @@ const STATE_CONFIGS: Record<string, {
   defaultTurnout: number;
   parties: any[];
   regions: { id: string; label: string; total: number; partySeats?: Record<string, number> }[];
-  constituencies?: { id: string; name: string; type: 'Star' | 'Swing' | 'Safe'; leading: string; margin: string; candidate: string; history?: number[] }[];
+  constituencies?: { id: string; name: string; type: 'Star' | 'Swing' | 'Safe'; leading: string; margin: string; candidate: string; history?: number[]; regionId?: string; result?: { winner: string; winnerCandidate: string; actualMargin: string; predictionCorrect: boolean } }[];
   trendData: any[];
   pollData: {
     prePoll: Record<string, number>;
@@ -89,23 +89,23 @@ const STATE_CONFIGS: Record<string, {
       { id: 'north', label: 'Vanniyar Belt', total: 45, partySeats: { dmk: 22, aiadmk: 10, tvk: 6, ntk: 7 } },
     ],
     constituencies: [
-      { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', regionId: 'chennai', history: [12000, 14000, 15000] },
-      { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', regionId: 'chennai', history: [40000, 42000, 45000] },
-      { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', regionId: 'south', history: [1000, 3000, 5000] },
-      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'AIADMK', margin: '1,200+', candidate: 'BJP-Coalition', regionId: 'kongu', history: [2500, 1800, 1200] },
-      { id: 'edappadi', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', regionId: 'kongu', history: [28000, 29000, 30000] },
-      { id: 'dindigul', name: 'Dindigul', type: 'Star', leading: 'DMK', margin: '22,000+', candidate: 'Dindigul Leoni', regionId: 'south', history: [18000, 20000, 22000] },
-      { id: 'madurai-central', name: 'Madurai Central', type: 'Star', leading: 'DMK', margin: '18,500+', candidate: 'PTR Palanivel Thiagarajan', regionId: 'south', history: [16000, 17500, 18500] },
-      { id: 'trichy-east', name: 'Trichy (East)', type: 'Swing', leading: 'DMK', margin: '4,000+', candidate: 'Inigo Irudhayaraj', regionId: 'delta', history: [8000, 6000, 4000] },
-      { id: 'villupuram', name: 'Villupuram', type: 'Swing', leading: 'AIADMK', margin: '2,500+', candidate: 'C.V. Shanmugam', regionId: 'north', history: [5000, 4000, 2500] },
-      { id: 'thanjavur', name: 'Thanjavur', type: 'Safe', leading: 'DMK', margin: '28,000+', candidate: 'Anbalagan', regionId: 'delta', history: [25000, 26000, 28000] },
-      { id: 'coimbatore-north', name: 'Coimbatore North', type: 'Swing', leading: 'AIADMK', margin: '3,800+', candidate: 'Amman Arjunan', regionId: 'kongu', history: [6000, 5000, 3800] },
-      { id: 'salem-south', name: 'Salem South', type: 'Safe', leading: 'AIADMK', margin: '22,000+', candidate: 'Balasubramanian', regionId: 'kongu', history: [20000, 21000, 22000] },
-      { id: 'erode-east', name: 'Erode East', type: 'Star', leading: 'DMK', margin: '66,000+', candidate: 'E.V.K.S. Elangovan', regionId: 'kongu', history: [10000, 35000, 66000] },
-      { id: 'tiruppur-south', name: 'Tiruppur South', type: 'Swing', leading: 'AIADMK', margin: '1,500+', candidate: 'Gunasekaran', regionId: 'kongu', history: [3000, 2200, 1500] },
-      { id: 'thoothukudi', name: 'Thoothukudi', type: 'Safe', leading: 'DMK', margin: '35,000+', candidate: 'Geetha Jeevan', regionId: 'south', history: [30000, 32000, 35000] },
-      { id: 'ramanathapuram', name: 'Ramanathapuram', type: 'Star', leading: 'DMK', margin: '12,000+', candidate: 'K. Muthuramalingam', regionId: 'south', history: [8000, 10000, 12000] },
-      { id: 'kancheepuram', name: 'Kancheepuram', type: 'Safe', leading: 'DMK', margin: '20,000+', candidate: 'Ezhilarasan', regionId: 'north', history: [15000, 18000, 20000] },
+      { id: 'rk-nagar', name: 'RK Nagar', type: 'Star', leading: 'DMK', margin: '15,000+', candidate: 'Ebinezer', regionId: 'chennai', history: [12000, 14000, 15000], result: { winner: 'DMK', winnerCandidate: 'Ebinezer', actualMargin: '14,320', predictionCorrect: true } },
+      { id: 'kolathur', name: 'Kolathur', type: 'Safe', leading: 'DMK', margin: '45,000+', candidate: 'M.K. Stalin', regionId: 'chennai', history: [40000, 42000, 45000], result: { winner: 'DMK', winnerCandidate: 'M.K. Stalin', actualMargin: '48,112', predictionCorrect: true } },
+      { id: 'bodinayakkanur', name: 'Bodinayakkanur', type: 'Star', leading: 'DMK', margin: '5,000+', candidate: 'O. Panneerselvam', regionId: 'south', history: [1000, 3000, 5000], result: { winner: 'DMK', winnerCandidate: 'O. Panneerselvam', actualMargin: '4,876', predictionCorrect: true } },
+      { id: 'coimbatore-south', name: 'Coimbatore South', type: 'Swing', leading: 'AIADMK', margin: '1,200+', candidate: 'BJP-Coalition', regionId: 'kongu', history: [2500, 1800, 1200], result: { winner: 'DMK', winnerCandidate: 'Prabhakaran R.', actualMargin: '3,450', predictionCorrect: false } },
+      { id: 'edappadi', name: 'Edappadi', type: 'Safe', leading: 'AIADMK', margin: '30,000+', candidate: 'E.K. Palaniswami', regionId: 'kongu', history: [28000, 29000, 30000], result: { winner: 'AIADMK', winnerCandidate: 'E.K. Palaniswami', actualMargin: '31,204', predictionCorrect: true } },
+      { id: 'dindigul', name: 'Dindigul', type: 'Star', leading: 'DMK', margin: '22,000+', candidate: 'Dindigul Leoni', regionId: 'south', history: [18000, 20000, 22000], result: { winner: 'DMK', winnerCandidate: 'Dindigul Leoni', actualMargin: '23,580', predictionCorrect: true } },
+      { id: 'madurai-central', name: 'Madurai Central', type: 'Star', leading: 'DMK', margin: '18,500+', candidate: 'PTR Palanivel Thiagarajan', regionId: 'south', history: [16000, 17500, 18500], result: { winner: 'DMK', winnerCandidate: 'PTR Palanivel Thiagarajan', actualMargin: '19,230', predictionCorrect: true } },
+      { id: 'trichy-east', name: 'Trichy (East)', type: 'Swing', leading: 'DMK', margin: '4,000+', candidate: 'Inigo Irudhayaraj', regionId: 'delta', history: [8000, 6000, 4000], result: { winner: 'DMK', winnerCandidate: 'Inigo Irudhayaraj', actualMargin: '5,120', predictionCorrect: true } },
+      { id: 'villupuram', name: 'Villupuram', type: 'Swing', leading: 'AIADMK', margin: '2,500+', candidate: 'C.V. Shanmugam', regionId: 'north', history: [5000, 4000, 2500], result: { winner: 'TVK', winnerCandidate: 'Moorthy K.', actualMargin: '1,840', predictionCorrect: false } },
+      { id: 'thanjavur', name: 'Thanjavur', type: 'Safe', leading: 'DMK', margin: '28,000+', candidate: 'Anbalagan', regionId: 'delta', history: [25000, 26000, 28000], result: { winner: 'DMK', winnerCandidate: 'Anbalagan', actualMargin: '29,450', predictionCorrect: true } },
+      { id: 'coimbatore-north', name: 'Coimbatore North', type: 'Swing', leading: 'AIADMK', margin: '3,800+', candidate: 'Amman Arjunan', regionId: 'kongu', history: [6000, 5000, 3800], result: { winner: 'TVK', winnerCandidate: 'Selvam T.', actualMargin: '2,210', predictionCorrect: false } },
+      { id: 'salem-south', name: 'Salem South', type: 'Safe', leading: 'AIADMK', margin: '22,000+', candidate: 'Balasubramanian', regionId: 'kongu', history: [20000, 21000, 22000], result: { winner: 'AIADMK', winnerCandidate: 'Balasubramanian', actualMargin: '20,870', predictionCorrect: true } },
+      { id: 'erode-east', name: 'Erode East', type: 'Star', leading: 'DMK', margin: '66,000+', candidate: 'E.V.K.S. Elangovan', regionId: 'kongu', history: [10000, 35000, 66000], result: { winner: 'DMK', winnerCandidate: 'E.V.K.S. Elangovan', actualMargin: '61,340', predictionCorrect: true } },
+      { id: 'tiruppur-south', name: 'Tiruppur South', type: 'Swing', leading: 'AIADMK', margin: '1,500+', candidate: 'Gunasekaran', regionId: 'kongu', history: [3000, 2200, 1500], result: { winner: 'AIADMK', winnerCandidate: 'Gunasekaran', actualMargin: '980', predictionCorrect: true } },
+      { id: 'thoothukudi', name: 'Thoothukudi', type: 'Safe', leading: 'DMK', margin: '35,000+', candidate: 'Geetha Jeevan', regionId: 'south', history: [30000, 32000, 35000], result: { winner: 'DMK', winnerCandidate: 'Geetha Jeevan', actualMargin: '36,780', predictionCorrect: true } },
+      { id: 'ramanathapuram', name: 'Ramanathapuram', type: 'Star', leading: 'DMK', margin: '12,000+', candidate: 'K. Muthuramalingam', regionId: 'south', history: [8000, 10000, 12000], result: { winner: 'DMK', winnerCandidate: 'K. Muthuramalingam', actualMargin: '13,450', predictionCorrect: true } },
+      { id: 'kancheepuram', name: 'Kancheepuram', type: 'Safe', leading: 'DMK', margin: '20,000+', candidate: 'Ezhilarasan', regionId: 'north', history: [15000, 18000, 20000], result: { winner: 'DMK', winnerCandidate: 'Ezhilarasan', actualMargin: '21,670', predictionCorrect: true } },
     ],
     parties: [
       { 
@@ -601,6 +601,34 @@ export default function App() {
                     </div>
                   </div>
                   
+                  {(() => {
+                    const withResults = stateData.constituencies?.filter(c => c.result) || [];
+                    if (withResults.length === 0) return null;
+                    const correct = withResults.filter(c => c.result?.predictionCorrect).length;
+                    const pct = Math.round((correct / withResults.length) * 100);
+                    return (
+                      <div className="mb-6 p-4 bg-brand-text/5 border border-brand-text/10 flex items-center gap-6">
+                        <div className="shrink-0">
+                          <span className="text-[8px] uppercase tracking-widest text-brand-text/40 block mb-1">Prediction Accuracy</span>
+                          <span className="text-xl font-bold font-serif">{correct}<span className="text-brand-text/30 text-sm font-sans">/{withResults.length}</span></span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="w-full h-1.5 bg-brand-text/10 mb-1">
+                            <div className="h-full bg-green-500 transition-all duration-700" style={{ width: `${pct}%` }} />
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[8px] text-brand-text/40 uppercase tracking-widest">{withResults.length} seats declared</span>
+                            <span className="text-[8px] font-bold text-green-600 uppercase tracking-widest">{pct}% accurate</span>
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <span className="text-[8px] uppercase tracking-widest text-brand-text/40 block mb-1">Upsets</span>
+                          <span className="text-xl font-bold font-serif text-orange-500">{withResults.length - correct}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                     {stateData.constituencies?.filter(c => {
                       const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -626,13 +654,22 @@ export default function App() {
                             <h5 className="text-[10px] uppercase tracking-widest text-brand-text/40 mb-1">{c.type} SEAT</h5>
                             <h3 className="text-lg font-serif italic">{c.name}</h3>
                           </div>
-                          <span className={`text-[8px] font-bold px-2 py-1 uppercase tracking-widest ${
-                            c.type === 'Star' ? 'bg-brand-accent text-white' : 
-                            c.type === 'Swing' ? 'bg-orange-100 text-orange-700' : 
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {c.type}
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`text-[8px] font-bold px-2 py-1 uppercase tracking-widest ${
+                              c.type === 'Star' ? 'bg-brand-accent text-white' :
+                              c.type === 'Swing' ? 'bg-orange-100 text-orange-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {c.type}
+                            </span>
+                            {c.result && (
+                              <span className={`text-[7px] font-bold px-1.5 py-0.5 uppercase tracking-widest ${
+                                c.result.predictionCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {c.result.predictionCorrect ? '✓ CORRECT' : '✗ UPSET'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="space-y-3">
@@ -663,9 +700,24 @@ export default function App() {
                             <span className="text-xs font-serif italic" style={{ color: stateData.parties.find(p => p.id === c.leading.toLowerCase() || p.name.includes(c.leading))?.color || 'inherit' }}>{c.leading}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-[9px] uppercase text-brand-text/40">Est. Margin</span>
-                            <span className="text-[10px] font-mono">{c.margin}</span>
+                            <span className="text-[9px] uppercase text-brand-text/40">{c.result ? 'Predicted Margin' : 'Est. Margin'}</span>
+                            <span className="text-[10px] font-mono text-brand-text/50">{c.margin}</span>
                           </div>
+                          {c.result && (
+                            <>
+                              <div className="h-px bg-brand-text/10 my-1" />
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] uppercase text-brand-text/40">Actual Winner</span>
+                                <span className="text-xs font-bold" style={{ color: stateData.parties.find(p => p.id === c.result!.winner.toLowerCase() || p.name.includes(c.result!.winner))?.color || 'inherit' }}>
+                                  {c.result.winner}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] uppercase text-brand-text/40">Actual Margin</span>
+                                <span className="text-[10px] font-mono font-bold">{c.result.actualMargin}</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -771,7 +823,46 @@ export default function App() {
                           </div>
                         </div>
                       ) || null}
-                      
+
+                      {(() => {
+                        const sel = stateData.constituencies?.find(c => c.id === selectedConstituencyId);
+                        if (!sel?.result) return null;
+                        const winnerColor = stateData.parties.find(p => p.id === sel.result!.winner.toLowerCase() || p.name.includes(sel.result!.winner))?.color || '#000';
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`mt-8 p-6 border-l-4 ${sel.result.predictionCorrect ? 'border-green-500 bg-green-50' : 'border-red-400 bg-red-50'}`}
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                              <span className="text-[9px] uppercase tracking-widest font-bold text-brand-text/50">Official Result</span>
+                              <span className={`text-[8px] font-bold px-2 py-1 uppercase tracking-widest ${sel.result.predictionCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                                {sel.result.predictionCorrect ? '✓ Prediction Correct' : '✗ Prediction Wrong — Upset'}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-6">
+                              <div>
+                                <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Winner</span>
+                                <span className="text-sm font-bold" style={{ color: winnerColor }}>{sel.result.winner}</span>
+                              </div>
+                              <div>
+                                <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Winning Candidate</span>
+                                <span className="text-xs font-bold">{sel.result.winnerCandidate}</span>
+                              </div>
+                              <div>
+                                <span className="text-[8px] uppercase tracking-widest opacity-40 block mb-1">Actual Margin</span>
+                                <span className="text-xs font-mono font-bold">{sel.result.actualMargin}</span>
+                              </div>
+                            </div>
+                            {!sel.result.predictionCorrect && (
+                              <p className="mt-4 text-[10px] italic text-brand-text/60">
+                                Predicted: <span className="font-bold">{sel.leading}</span> ({sel.candidate}) with margin {sel.margin}. Actual result diverged — a key upset in this cycle.
+                              </p>
+                            )}
+                          </motion.div>
+                        );
+                      })()}
+
                       {/* New AI Analysis Integration */}
                       <div className="mt-8 p-6 bg-brand-text/5 border-l-2 border-brand-accent">
                         <div className="flex justify-between items-center mb-6">
