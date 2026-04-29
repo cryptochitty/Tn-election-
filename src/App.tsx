@@ -295,6 +295,204 @@ const STATE_CONFIGS: Record<string, {
       { platform: 'Instagram', mentions: '400K', sentiment: 'Neutral', trendingTopic: '#Assam2026', icon: Share2 },
       { platform: 'Facebook', mentions: '1.8M', sentiment: 'Positive', trendingTopic: 'Tribal Progress', icon: Users },
     ]
+  },
+  kerala: {
+    name: 'Kerala',
+    description: 'Kerala 2026 is poised to break the 5-decade alternating pattern, with LDF seeking a rare back-to-back mandate. The UDF is banking on anti-incumbency and the INDIA bloc momentum, while BJP-NDA targets its first double-digit tally.',
+    insight: 'Central Kerala (Thrissur–Ernakulam belt) is the swing zone. IUML consolidation in Malabar is the critical variable that could tip UDF past majority. BJP is eyeing 10+ seats through polarisation in coastal constituencies.',
+    history: 'Kerala politics has rotated between LDF and UDF every 5 years since 1982 — the only exception was 2021 when CPI-M-led LDF won a historic consecutive term. The Left has governed from 2016 to 2026.',
+    demographics: [
+      { label: 'Literacy Rate', value: '96.2%' },
+      { label: 'Urbanization', value: '47.7%' },
+      { label: 'Projected Turnout', value: '75.5%' },
+      { label: 'Key Groups', value: 'Nair, Ezhava, Muslim, Christian' },
+    ],
+    totalSeats: 140,
+    majority: 71,
+    totalElectorate: 27000000,
+    defaultTurnout: 75.5,
+    regions: [
+      { id: 'all', label: 'All Regions', total: 140 },
+      { id: 'south', label: 'South Kerala', total: 35, partySeats: { ldf: 20, udf: 12, bjp: 3 } },
+      { id: 'central', label: 'Central Kerala', total: 40, partySeats: { ldf: 20, udf: 16, bjp: 4 } },
+      { id: 'thrissur', label: 'Thrissur Belt', total: 30, partySeats: { ldf: 16, udf: 12, bjp: 2 } },
+      { id: 'malabar', label: 'Malabar / North', total: 35, partySeats: { ldf: 16, udf: 18, bjp: 1 } },
+    ],
+    constituencies: [
+      { id: 'pinarayi', name: 'Dharmadom (CM)', type: 'Safe', leading: 'LDF', margin: '20,000+', candidate: 'Pinarayi Vijayan', regionId: 'malabar', history: [16000, 18000, 20000] },
+      { id: 'nemom', name: 'Nemom', type: 'Safe', leading: 'BJP', margin: '12,000+', candidate: 'O. Rajagopal', regionId: 'south', history: [8000, 10000, 12000] },
+      { id: 'thrissur', name: 'Thrissur', type: 'Swing', leading: 'LDF', margin: '3,500+', candidate: 'K. Radhakrishnan', regionId: 'thrissur', history: [5000, 4000, 3500] },
+      { id: 'vatakara', name: 'Vatakara', type: 'Safe', leading: 'UDF', margin: '18,000+', candidate: 'Shafi Parambil', regionId: 'malabar', history: [14000, 16000, 18000] },
+      { id: 'thiruvananthapuram', name: 'Thiruvananthapuram', type: 'Swing', leading: 'UDF', margin: '2,000+', candidate: 'V.S. Sivakumar', regionId: 'south', history: [4000, 3000, 2000] },
+      { id: 'ernakulam', name: 'Ernakulam', type: 'Swing', leading: 'LDF', margin: '4,500+', candidate: 'T.J. Vinod', regionId: 'central', history: [3000, 4000, 4500] },
+      { id: 'kozhikode-north', name: 'Kozhikode North', type: 'Safe', leading: 'UDF', margin: '22,000+', candidate: 'Ahammad Devarkovil', regionId: 'malabar', history: [18000, 20000, 22000] },
+      { id: 'palakkad', name: 'Palakkad', type: 'Star', leading: 'BJP', margin: '5,000+', candidate: 'E. Sreedharan', regionId: 'thrissur', history: [2000, 3500, 5000] },
+    ],
+    parties: [
+      {
+        id: 'ldf',
+        name: 'LDF (CPI-M, CPI, NCP, JD-S)',
+        color: '#de2d26',
+        seats: 72,
+        voteShare: 40.5,
+        momentum: 0,
+        factor: 'Development + Welfare',
+        factorImpact: 82,
+        migration: [
+          { label: 'From UDF (anti-BJP)', value: 8, type: 'gain' },
+          { label: 'To UDF (anti-incumbency)', value: -10, type: 'loss' },
+          { label: 'Youth Retention', value: 12, type: 'gain' },
+        ]
+      },
+      {
+        id: 'udf',
+        name: 'UDF (INC, IUML, KC-M)',
+        color: '#3b82f6',
+        seats: 60,
+        voteShare: 38.2,
+        momentum: 0,
+        factor: 'Anti-incumbency + IUML Base',
+        factorImpact: 78,
+        migration: [
+          { label: 'From LDF switchers', value: 10, type: 'gain' },
+          { label: 'IUML consolidation', value: 15, type: 'gain' },
+          { label: 'To BJP (Hindu belt)', value: -6, type: 'loss' },
+        ]
+      },
+      {
+        id: 'bjp',
+        name: 'BJP–NDA (BJP, BDJS)',
+        color: '#FF9933',
+        seats: 7,
+        voteShare: 15.8,
+        momentum: 0,
+        factor: 'Polarisation + Coastal Vote',
+        factorImpact: 55,
+        migration: [
+          { label: 'From UDF (Nair belt)', value: 6, type: 'gain' },
+          { label: 'Core RSS Cadre', value: 20, type: 'gain' },
+        ]
+      },
+      {
+        id: 'others',
+        name: 'Others / Independents',
+        color: '#666666',
+        seats: 1,
+        voteShare: 5.5,
+        momentum: 0,
+        factor: 'Local Issues',
+        factorImpact: 20,
+        migration: [
+          { label: 'Independents', value: 50, type: 'neutral' },
+        ]
+      },
+    ],
+    trendData: [
+      { date: 'Jan 26', ldf: 76, udf: 55, bjp: 5 },
+      { date: 'Feb 26', ldf: 74, udf: 57, bjp: 6 },
+      { date: 'Mar 26', ldf: 72, udf: 59, bjp: 7 },
+      { date: 'Apr 26', ldf: 72, udf: 60, bjp: 7 },
+    ],
+    pollData: {
+      prePoll: { ldf: 74, udf: 57, bjp: 6 },
+      postPoll: { ldf: 70, udf: 62, bjp: 7 },
+      exitPoll: { ldf: 72, udf: 60, bjp: 7 },
+    },
+    socialTrends: [
+      { platform: 'X / Twitter', mentions: '1.4M', sentiment: 'Neutral', trendingTopic: '#Kerala2026', icon: Zap },
+      { platform: 'Instagram', mentions: '900K', sentiment: 'Positive', trendingTopic: '#PinarayiAgain', icon: Share2 },
+      { platform: 'Facebook', mentions: '3.1M', sentiment: 'Neutral', trendingTopic: 'IUML Wave Malabar', icon: Users },
+    ]
+  },
+  puducherry: {
+    name: 'Puducherry',
+    description: 'The Union Territory\'s 30-seat assembly is a triangular contest between AINRC+BJP, the Congress+DMK combine, and breakaway independents. Rangasamy\'s government faces incumbency headwinds while Congress bets on the INDIA bloc wave.',
+    insight: 'The Puducherry constituency (urban) is the swing battleground. AINRC\'s credibility on statehood demand and DMK spillover from TN define the outcome. The 3 nominated seats give the ruling coalition a thin insurance.',
+    history: 'Puducherry has seen frequent political instability — governments have fallen mid-term multiple times. AINRC under N. Rangasamy has held power since 2021 after engineering a no-confidence collapse of the Congress-DMK govt.',
+    demographics: [
+      { label: 'Urbanization', value: '68.3%' },
+      { label: 'Literacy Rate', value: '85.8%' },
+      { label: 'Projected Turnout', value: '78.5%' },
+      { label: 'Key Groups', value: 'Tamil-origin, French Creole' },
+    ],
+    totalSeats: 30,
+    majority: 16,
+    totalElectorate: 1000000,
+    defaultTurnout: 78.5,
+    regions: [
+      { id: 'all', label: 'All Regions', total: 30 },
+      { id: 'puducherry', label: 'Puducherry', total: 24, partySeats: { ainrc: 11, inc: 6, dmk: 5, others: 2 } },
+      { id: 'karaikal', label: 'Karaikal', total: 5, partySeats: { ainrc: 3, dmk: 2 } },
+      { id: 'mahe', label: 'Mahe & Yanam', total: 1, partySeats: { inc: 1 } },
+    ],
+    constituencies: [
+      { id: 'indira-nagar', name: 'Indira Nagar', type: 'Safe', leading: 'AINRC', margin: '8,000+', candidate: 'N. Rangasamy', regionId: 'puducherry', history: [5000, 6500, 8000] },
+      { id: 'ariyankuppam', name: 'Ariyankuppam', type: 'Swing', leading: 'DMK', margin: '1,500+', candidate: 'A. John Kumar', regionId: 'puducherry', history: [3000, 2200, 1500] },
+      { id: 'nellithope', name: 'Nellithope', type: 'Star', leading: 'Congress', margin: '3,000+', candidate: 'A. Namassivayam', regionId: 'puducherry', history: [1000, 2000, 3000] },
+      { id: 'karaikal-north', name: 'Karaikal North', type: 'Safe', leading: 'AINRC', margin: '6,000+', candidate: 'D. Namboothiri', regionId: 'karaikal', history: [4000, 5000, 6000] },
+      { id: 'oulgaret', name: 'Oulgaret', type: 'Swing', leading: 'AINRC', margin: '2,500+', candidate: 'S. Dhanavel', regionId: 'puducherry', history: [4500, 3500, 2500] },
+    ],
+    parties: [
+      {
+        id: 'ainrc',
+        name: 'AINRC+BJP Alliance',
+        color: '#FF9933',
+        seats: 16,
+        voteShare: 42.0,
+        momentum: 0,
+        factor: 'Statehood Demand + Incumbent Base',
+        factorImpact: 70,
+        migration: [
+          { label: 'BJP cadre addition', value: 12, type: 'gain' },
+          { label: 'Anti-Congress swing', value: 8, type: 'gain' },
+          { label: 'To Congress (dissidents)', value: -8, type: 'loss' },
+        ]
+      },
+      {
+        id: 'inc',
+        name: 'Congress+DMK Alliance',
+        color: '#3b82f6',
+        seats: 12,
+        voteShare: 39.5,
+        momentum: 0,
+        factor: 'INDIA Bloc Wave + DMK Spillover',
+        factorImpact: 68,
+        migration: [
+          { label: 'DMK TN spillover', value: 18, type: 'gain' },
+          { label: 'AINRC anti-incumbency', value: 10, type: 'gain' },
+          { label: 'To AINRC (split)', value: -6, type: 'loss' },
+        ]
+      },
+      {
+        id: 'others',
+        name: 'Others / Independents',
+        color: '#666666',
+        seats: 2,
+        voteShare: 18.5,
+        momentum: 0,
+        factor: 'Local Strongmen',
+        factorImpact: 30,
+        migration: [
+          { label: 'AINRC defectors', value: 40, type: 'neutral' },
+        ]
+      },
+    ],
+    trendData: [
+      { date: 'Jan 26', ainrc: 17, inc: 11, others: 2 },
+      { date: 'Feb 26', ainrc: 16, inc: 12, others: 2 },
+      { date: 'Mar 26', ainrc: 15, inc: 13, others: 2 },
+      { date: 'Apr 26', ainrc: 16, inc: 12, others: 2 },
+    ],
+    pollData: {
+      prePoll: { ainrc: 17, inc: 11, others: 2 },
+      postPoll: { ainrc: 15, inc: 13, others: 2 },
+      exitPoll: { ainrc: 16, inc: 12, others: 2 },
+    },
+    socialTrends: [
+      { platform: 'X / Twitter', mentions: '180K', sentiment: 'Neutral', trendingTopic: '#Pondy2026', icon: Zap },
+      { platform: 'Instagram', mentions: '95K', sentiment: 'Positive', trendingTopic: '#StateHoodNow', icon: Share2 },
+      { platform: 'Facebook', mentions: '420K', sentiment: 'Neutral', trendingTopic: 'DMK Wave Pondy', icon: Users },
+    ]
   }
 };
 
