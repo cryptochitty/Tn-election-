@@ -421,7 +421,7 @@ const STATE_CONFIGS: Record<string, {
     defaultTurnout: 78.5,
     regions: [
       { id: 'all', label: 'All Regions', total: 30 },
-      { id: 'puducherry', label: 'Puducherry', total: 23, partySeats: { ainrc: 10, inc: 6, dmk: 5, others: 2 } },
+      { id: 'puducherry', label: 'Puducherry', total: 23, partySeats: { ainrc: 10, inc: 11, others: 2 } },
       { id: 'karaikal', label: 'Karaikal', total: 5, partySeats: { ainrc: 3, inc: 2 } },
       { id: 'mahe', label: 'Mahe', total: 1, partySeats: { inc: 1 } },
       { id: 'yanam', label: 'Yanam', total: 1, partySeats: { others: 1 } },
