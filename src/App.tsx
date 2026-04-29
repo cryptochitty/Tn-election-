@@ -425,9 +425,9 @@ export default function App() {
   }, [selectedStateId]);
 
   const handleOpenDeepDive = (constituencyId?: string) => {
-    if (constituencyId) {
-      setSelectedConstituencyId(constituencyId);
-    }
+    setDeepDiveRegion('all');
+    setSearchTerm('');
+    setSelectedConstituencyId(constituencyId ?? null);
     setShowDeepDive(true);
   };
 
@@ -538,6 +538,27 @@ export default function App() {
   
   const activeRegionData = stateRegions.find(r => r.id === activeRegion);
   
+  // Filtered constituency list for the deep dive modal — recomputes on any filter change
+  const filteredConstituencies = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return stateConstituencies.filter(c => {
+      const rid = (c as any).regionId as string | undefined;
+      const matchesRegion = deepDiveRegion === 'all' || rid === deepDiveRegion;
+      const matchesSearch = !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.candidate.toLowerCase().includes(q) ||
+        c.leading.toLowerCase().includes(q) ||
+        c.type.toLowerCase().includes(q) ||
+        !!(c.result?.winner.toLowerCase().includes(q)) ||
+        !!(c.result?.winnerCandidate.toLowerCase().includes(q)) ||
+        (q === 'upset'    && !!c.result && !c.result.predictionCorrect) ||
+        (q === 'correct'  && !!c.result?.predictionCorrect) ||
+        (q === 'declared' && !!c.result) ||
+        (q === 'pending'  && !c.result);
+      return matchesRegion && matchesSearch;
+    });
+  }, [stateConstituencies, deepDiveRegion, searchTerm]);
+
   const regionLeader = useMemo(() => {
     if (!stateData) return leadingParty;
     if (activeRegion === 'all') return leadingParty;
@@ -688,35 +709,21 @@ export default function App() {
                     );
                   })()}
 
-                  {(() => {
-                    const q = searchTerm.toLowerCase();
-                    const filtered = stateData.constituencies?.filter(c => {
-                      const matchesSearch = !q ||
-                        c.name.toLowerCase().includes(q) ||
-                        c.candidate.toLowerCase().includes(q) ||
-                        c.leading.toLowerCase().includes(q) ||
-                        c.type.toLowerCase().includes(q) ||
-                        (c.result?.winner.toLowerCase().includes(q)) ||
-                        (c.result?.winnerCandidate.toLowerCase().includes(q)) ||
-                        (q === 'upset' && c.result && !c.result.predictionCorrect) ||
-                        (q === 'correct' && c.result?.predictionCorrect) ||
-                        (q === 'declared' && !!c.result) ||
-                        (q === 'pending' && !c.result);
-                      const matchesRegion = deepDiveRegion === 'all' || (c as any).regionId === deepDiveRegion;
-                      return matchesSearch && matchesRegion;
-                    }) || [];
-                    const regionLabel = stateData.regions.find(r => r.id === deepDiveRegion)?.label;
-                    return (
-                      <>
-                        <div className="flex items-center justify-between text-[9px] uppercase tracking-widest text-brand-text/40 mb-2">
-                          <span>{filtered.length} of {stateData.constituencies?.length || 0} constituencies</span>
-                          {regionLabel && deepDiveRegion !== 'all' && <span className="font-bold text-brand-accent">{regionLabel}</span>}
-                        </div>
-                        {filtered.length === 0 && (
-                          <div className="col-span-2 py-12 text-center text-brand-text/30 text-xs italic">No constituencies match "{searchTerm}"</div>
-                        )}
+                  <div className="flex items-center justify-between text-[9px] uppercase tracking-widest text-brand-text/40 mb-2">
+                    <span>{filteredConstituencies.length} of {stateConstituencies.length} constituencies</span>
+                    {deepDiveRegion !== 'all' && (
+                      <span className="font-bold text-brand-accent">
+                        {stateData.regions.find(r => r.id === deepDiveRegion)?.label}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                    {filtered.map((c) => (
+                    {filteredConstituencies.length === 0 ? (
+                      <div className="col-span-2 py-12 text-center text-brand-text/30 text-xs italic">
+                        No constituencies match{searchTerm ? ` "${searchTerm}"` : ' this region'}
+                      </div>
+                    ) : filteredConstituencies.map((c) => (
                       <div 
                         key={c.id} 
                         onClick={() => setSelectedConstituencyId(c.id)}
@@ -802,9 +809,6 @@ export default function App() {
                       </div>
                     ))}
                   </div>
-                      </>
-                    );
-                  })()}
 
                   {selectedConstituencyId && (
                     <motion.div 
