@@ -179,11 +179,11 @@ async function fetchTNUpdates(): Promise<Result[]> {
       // Use CONSTITUENCY_MAP if available (for ID consistency with hardcoded frontend data),
       // otherwise slugify the raw name
       const id = mapConst(rawName) ?? slugify(rawName);
-      const winner = cells[3] || '';
-      const leading = cells[2] || '';
-      const party = winner || leading;
-      if (!party) continue;
-      out.push(makeResult(id, rawName, party, '', 'N/A', winner ? 'Declared' : 'Leading'));
+      // Only use declared winners (col 3). Leading trends (col 2) are unreliable
+      // and cause inflated seat counts that don't match ECI declared results.
+      const winner = cells[3]?.trim() || '';
+      if (!winner) continue;
+      out.push(makeResult(id, rawName, winner, '', 'N/A', 'Declared'));
     }
     return out;
   } catch { return []; }
