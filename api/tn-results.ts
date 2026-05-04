@@ -117,6 +117,29 @@ async function fetchNDTV(): Promise<Result[]> {
   } catch { return []; }
 }
 
+async function fetchTNUpdates(): Promise<Result[]> {
+  try {
+    const url = 'https://tnupdates.com/tn-assembly-elections-winners-2026/';
+    const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return [];
+    const html = await r.text();
+    const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
+    const out: Result[] = [];
+    for (const row of rows.slice(1)) {
+      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
+        .map(td => td.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+      if (cells.length < 3) continue;
+      // columns: #, Constituency, Leading, Winner
+      const id = mapConst(cells[1] ?? '');
+      if (!id) continue;
+      const party = (cells[3] && cells[3] !== '—') ? cells[3] : cells[2];
+      if (!party || party === '—') continue;
+      out.push(makeResult(id, party, '', 'N/A', cells[3] && cells[3] !== '—' ? 'Declared' : 'Leading'));
+    }
+    return out;
+  } catch { return []; }
+}
+
 async function fetchHindu(): Promise<Result[]> {
   try {
     const url = 'https://www.thehindu.com/elections/results/tamil-nadu-2026/data.json';
@@ -204,6 +227,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const sources: [string, () => Promise<Result[]>][] = [
+    ['TNUpdates', fetchTNUpdates],
     ['OpenCity', fetchOpenCity],
     ['ECI', fetchECI],
     ['NDTV', fetchNDTV],
