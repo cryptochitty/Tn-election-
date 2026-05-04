@@ -577,13 +577,14 @@ export default function App() {
         const res = await fetch(RENDER_API);
         if (!res.ok) throw new Error('non-200');
         const json = await res.json();
+        // Always update BOOM tally regardless of constituency data availability
+        if (json.boomTally?.length) { setBoomTally(json.boomTally); setLiveUpdatedAt(new Date()); }
+        if (json.boomUpdatedAt) setBoomUpdatedAt(json.boomUpdatedAt);
         if (json.ok && json.results?.length) {
           applyResults(json.results);
           setLiveSource(json.source ?? null);
           setLiveUpdatedAt(new Date());
           setLiveSourceTime(json.sourceUpdatedAt ?? null);
-          if (json.boomTally?.length) setBoomTally(json.boomTally);
-          if (json.boomUpdatedAt) setBoomUpdatedAt(json.boomUpdatedAt);
         }
       } catch {
         setLiveResultsStatus('error');
