@@ -525,9 +525,9 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveResultsStatus, setLiveResultsStatus] = useState<'idle' | 'live' | 'error'>('idle');
 
-  // Live results polling — hits Render API every 60s, merges declared results into stateData
+  // Live results polling — hits Vercel serverless function every 60s, merges declared results into stateData
   useEffect(() => {
-    const RENDER_API = 'https://ai-video-generator-bqm8.onrender.com/api/tn-results';
+    const RENDER_API = '/api/tn-results';
     const applyResults = (apiResults: {id: string; winner: string; winnerCandidate: string; actualMargin: string; predictionCorrect: boolean | null}[]) => {
       if (!apiResults.length) return;
       setStateData(prev => {
