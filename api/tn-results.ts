@@ -4,28 +4,61 @@ const HEADERS = {
 };
 
 const CONSTITUENCY_MAP: Record<string, string> = {
+  // RK Nagar
   'r k nagar': 'rk-nagar',
   'rk nagar': 'rk-nagar',
+  'dr.radhakrishnan nagar': 'rk-nagar',
+  'dr. radhakrishnan nagar': 'rk-nagar',
+  'radhakrishnan nagar': 'rk-nagar',
+  // Kolathur
   'kolathur': 'kolathur',
+  // Bodinayakkanur
   'bodinayakanur': 'bodinayakkanur',
   'bodinayakkanur': 'bodinayakkanur',
+  'bodinayakanoor': 'bodinayakkanur',
+  // Coimbatore
   'coimbatore south': 'coimbatore-south',
+  'coimbatore (south)': 'coimbatore-south',
+  'coimbatore north': 'coimbatore-north',
+  'coimbatore (north)': 'coimbatore-north',
+  // Edappadi
   'edapadi': 'edappadi',
   'edappadi': 'edappadi',
+  // Dindigul
   'dindigul': 'dindigul',
+  // Madurai Central
   'madurai central': 'madurai-central',
+  'madurai (central)': 'madurai-central',
+  // Trichy East
   'tiruchirappalli east': 'trichy-east',
+  'tiruchirappalli (east)': 'trichy-east',
   'trichy east': 'trichy-east',
   'trichy (east)': 'trichy-east',
+  // Villupuram
   'villupuram': 'villupuram',
+  'viluppuram': 'villupuram',
+  // Thanjavur
   'thanjavur': 'thanjavur',
-  'coimbatore north': 'coimbatore-north',
+  // Salem South
   'salem south': 'salem-south',
+  'salem (south)': 'salem-south',
+  // Erode East
   'erode east': 'erode-east',
+  'erode (east)': 'erode-east',
+  // Tiruppur South
   'tiruppur south': 'tiruppur-south',
+  'tiruppur (south)': 'tiruppur-south',
+  'tirupur south': 'tiruppur-south',
+  'tirupur (south)': 'tiruppur-south',
+  // Thoothukudi
   'thoothukudi': 'thoothukudi',
+  'thoothukkudi': 'thoothukudi',
+  'tuticorin': 'thoothukudi',
+  // Ramanathapuram
   'ramanathapuram': 'ramanathapuram',
+  // Kancheepuram
   'kancheepuram': 'kancheepuram',
+  'kanchipuram': 'kancheepuram',
 };
 
 const PARTY_MAP: Record<string, string> = {
@@ -125,16 +158,21 @@ async function fetchTNUpdates(): Promise<Result[]> {
     const html = await r.text();
     const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
     const out: Result[] = [];
-    for (const row of rows.slice(1)) {
+    for (const row of rows) {
+      // Skip header rows (th cells)
+      if (/<th/i.test(row)) continue;
       const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
-        .map(td => td.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+        .map(td => td.replace(/<[^>]+>/g, ' ').replace(/—/g, '').replace(/\s+/g, ' ').trim());
       if (cells.length < 3) continue;
       // columns: #, Constituency, Leading, Winner
       const id = mapConst(cells[1] ?? '');
       if (!id) continue;
-      const party = (cells[3] && cells[3] !== '—') ? cells[3] : cells[2];
-      if (!party || party === '—') continue;
-      out.push(makeResult(id, party, '', 'N/A', cells[3] && cells[3] !== '—' ? 'Declared' : 'Leading'));
+      // Prefer declared winner (col 3), fall back to leading (col 2)
+      const winner = cells[3] || '';
+      const leading = cells[2] || '';
+      const party = winner || leading;
+      if (!party) continue;
+      out.push(makeResult(id, party, '', 'N/A', winner ? 'Declared' : 'Leading'));
     }
     return out;
   } catch { return []; }
