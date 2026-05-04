@@ -1,3 +1,31 @@
+interface PartyTally {
+  party: string;
+  name: string;
+  abbreviation: string;
+  leads: number;
+  wins: number;
+  total: number;
+  color: string;
+}
+
+async function fetchBOOMTally(): Promise<{ tally: PartyTally[]; updatedAt: string | null }> {
+  try {
+    const r = await fetch('https://elections.boomlive.in/elections/tamil-nadu', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return { tally: [], updatedAt: null };
+    const html = await r.text();
+    const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (!m) return { tally: [], updatedAt: null };
+    const data = JSON.parse(m[1]);
+    const snap = data?.props?.pageProps?.initialSnapshot;
+    const tn = (snap?.states ?? []).find((s: any) => s.code === 'TN');
+    if (!tn) return { tally: [], updatedAt: null };
+    return { tally: tn.tally ?? [], updatedAt: tn.last_updated ?? snap?.last_updated ?? null };
+  } catch { return { tally: [], updatedAt: null }; }
+}
+
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'Accept-Language': 'en-IN,en;q=0.9',
@@ -288,13 +316,23 @@ export default async function handler(req: any, res: any) {
     ['TheHindu', fetchHindu],
   ];
 
+  // Fetch BOOM tally in parallel — accurate ECI-verified party totals for TN
+  const boomPromise = fetchBOOMTally();
+
   for (const [name, fn] of sources) {
-    const results = await fn();
+    const [results, boom] = await Promise.all([fn(), boomPromise]);
     if (results.length) {
       const sourceUpdatedAt = name === 'TNUpdates' ? tnUpdatesSourceTime : null;
-      return res.json({ ok: true, results, source: name, count: results.length, sourceUpdatedAt });
+      return res.json({
+        ok: true, results, source: name, count: results.length, sourceUpdatedAt,
+        boomTally: boom.tally, boomUpdatedAt: boom.updatedAt,
+      });
     }
   }
 
-  res.status(200).json({ ok: false, results: [], source: null, count: 0, message: 'No results available yet' });
+  const boom = await boomPromise;
+  res.status(200).json({
+    ok: false, results: [], source: null, count: 0, message: 'No results available yet',
+    boomTally: boom.tally, boomUpdatedAt: boom.updatedAt,
+  });
 }
