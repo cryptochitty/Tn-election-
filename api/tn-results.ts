@@ -147,27 +147,61 @@ function parseEciHtml(html: string): Result[] {
   return out;
 }
 
+async function fetchECIUrl(url: string): Promise<{ results: Result[]; status: number | string }> {
+  try {
+    const r = await fetch(url, {
+      headers: { ...HEADERS, Referer: 'https://results.eci.gov.in/' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return { results: [], status: r.status };
+    const html = await r.text();
+    return { results: parseEciHtml(html), status: 200 };
+  } catch (e: any) {
+    return { results: [], status: e?.message ?? 'error' };
+  }
+}
+
 async function fetchECI(): Promise<Result[]> {
-  // Try multiple known URL patterns for May 2026 TN Assembly results
   const urls = [
     'https://results.eci.gov.in/ResultAcGenMay2026/statewiseS22.htm',
     'https://results.eci.gov.in/ResultAcGenMay2026/ConstituencywiseS22.htm',
     'https://results.eci.gov.in/ResultAcGenMay2026/partywiseleadresult-234S22.htm',
   ];
   for (const url of urls) {
-    try {
-      const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
-      if (!r.ok) continue;
-      const html = await r.text();
-      const results = parseEciHtml(html);
-      if (results.length) return results;
-    } catch { continue; }
+    const { results } = await fetchECIUrl(url);
+    if (results.length) return results;
   }
   return [];
 }
 
-export default async function handler(_req: any, res: any) {
+export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+
+  // ?debug=1 shows status of each source for troubleshooting
+  const debug = req.query?.debug === '1';
+
+  if (debug) {
+    const eciUrls = [
+      'https://results.eci.gov.in/ResultAcGenMay2026/statewiseS22.htm',
+      'https://results.eci.gov.in/ResultAcGenMay2026/ConstituencywiseS22.htm',
+      'https://results.eci.gov.in/ResultAcGenMay2026/partywiseleadresult-234S22.htm',
+    ];
+    const eciResults = await Promise.all(eciUrls.map(async url => {
+      const { results, status } = await fetchECIUrl(url);
+      return { url, status, count: results.length };
+    }));
+
+    const [openCity, ndtv, hindu] = await Promise.all([
+      fetchOpenCity(), fetchNDTV(), fetchHindu(),
+    ]);
+
+    return res.json({
+      eci: eciResults,
+      openCity: openCity.length,
+      ndtv: ndtv.length,
+      hindu: hindu.length,
+    });
+  }
 
   const sources: [string, () => Promise<Result[]>][] = [
     ['OpenCity', fetchOpenCity],
