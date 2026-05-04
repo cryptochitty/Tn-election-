@@ -524,6 +524,8 @@ export default function App() {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveResultsStatus, setLiveResultsStatus] = useState<'idle' | 'live' | 'error'>('idle');
+  const [liveSource, setLiveSource] = useState<string | null>(null);
+  const [liveUpdatedAt, setLiveUpdatedAt] = useState<Date | null>(null);
 
   // Live results polling — hits Vercel serverless function every 60s, merges declared results into stateData
   useEffect(() => {
@@ -572,7 +574,11 @@ export default function App() {
         const res = await fetch(RENDER_API);
         if (!res.ok) throw new Error('non-200');
         const json = await res.json();
-        if (json.ok && json.results?.length) applyResults(json.results);
+        if (json.ok && json.results?.length) {
+          applyResults(json.results);
+          setLiveSource(json.source ?? null);
+          setLiveUpdatedAt(new Date());
+        }
       } catch {
         setLiveResultsStatus('error');
       }
@@ -1495,17 +1501,27 @@ export default function App() {
                 {/* Live Party-wise Tally */}
                 {totalDeclared > 0 && (
                   <div className="mb-10 bg-white border border-brand-text/5 p-6 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
-                    <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
                       <div className="flex items-center gap-3">
                         <span className="relative flex h-2 w-2">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
                         <span className="text-xs font-bold uppercase tracking-wider">Live Results</span>
+                        <span className="text-[10px] text-brand-text/40 uppercase tracking-widest">
+                          {totalDeclared} / {stateData.totalSeats} Declared · Majority {stateData.majority}
+                        </span>
                       </div>
-                      <span className="text-[10px] text-brand-text/40 uppercase tracking-widest">
-                        {totalDeclared} / {stateData.totalSeats} Declared · Majority {stateData.majority}
-                      </span>
+                      <div className="flex items-center gap-4 text-[10px] text-brand-text/35 uppercase tracking-widest">
+                        {liveSource && (
+                          <span>Source: <span className="text-brand-text/60 font-semibold">{liveSource}</span></span>
+                        )}
+                        {liveUpdatedAt && (
+                          <span>Updated: <span className="text-brand-text/60 font-semibold">
+                            {liveUpdatedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </span></span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Progress bar across all parties */}
