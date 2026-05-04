@@ -133,24 +133,37 @@ async function fetchHindu(): Promise<Result[]> {
   } catch { return []; }
 }
 
+function parseEciHtml(html: string): Result[] {
+  const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
+  const out: Result[] = [];
+  for (const row of rows.slice(1)) {
+    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
+      .map(td => td.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim());
+    if (cells.length < 4) continue;
+    const id = mapConst(cells[0]);
+    if (!id) continue;
+    out.push(makeResult(id, cells[2] ?? '', cells[1] ?? '', cells[4] ?? cells[3] ?? 'N/A', cells[cells.length - 1] ?? 'Leading'));
+  }
+  return out;
+}
+
 async function fetchECI(): Promise<Result[]> {
-  try {
-    const url = 'https://results.eci.gov.in/ResultsTNLA2026/partywiseresult-S22.htm';
-    const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
-    if (!r.ok) return [];
-    const html = await r.text();
-    const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
-    const out: Result[] = [];
-    for (const row of rows.slice(1)) {
-      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
-        .map(td => td.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
-      if (cells.length < 5) continue;
-      const id = mapConst(cells[0]);
-      if (!id) continue;
-      out.push(makeResult(id, cells[2], cells[1], cells[4] ?? 'N/A', cells[cells.length - 1] ?? 'Leading'));
-    }
-    return out;
-  } catch { return []; }
+  // Try multiple known URL patterns for May 2026 TN Assembly results
+  const urls = [
+    'https://results.eci.gov.in/ResultAcGenMay2026/statewiseS22.htm',
+    'https://results.eci.gov.in/ResultAcGenMay2026/ConstituencywiseS22.htm',
+    'https://results.eci.gov.in/ResultAcGenMay2026/partywiseleadresult-234S22.htm',
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) continue;
+      const html = await r.text();
+      const results = parseEciHtml(html);
+      if (results.length) return results;
+    } catch { continue; }
+  }
+  return [];
 }
 
 export default async function handler(_req: any, res: any) {
