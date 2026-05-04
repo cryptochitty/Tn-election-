@@ -79,6 +79,12 @@ const PARTY_MAP: Record<string, string> = {
 
 function norm(s: string) { return s.trim().toLowerCase(); }
 
+function slugify(name: string): string {
+  return name.toLowerCase()
+    .replace(/\s*\(sc\)/gi, '-sc').replace(/\s*\(st\)/gi, '-st')
+    .replace(/[()]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 function mapParty(raw: string): string {
   const n = norm(raw);
   for (const [key, val] of Object.entries(PARTY_MAP)) {
@@ -93,6 +99,7 @@ function mapConst(raw: string): string | null {
 
 interface Result {
   id: string;
+  name: string;
   winner: string;
   winnerCandidate: string;
   actualMargin: string;
@@ -100,9 +107,10 @@ interface Result {
   predictionCorrect: null;
 }
 
-function makeResult(id: string, party: string, candidate: string, margin: string | number, status = 'Declared'): Result {
+function makeResult(id: string, name: string, party: string, candidate: string, margin: string | number, status = 'Declared'): Result {
   return {
     id,
+    name,
     winner: mapParty(party),
     winnerCandidate: candidate.trim(),
     actualMargin: String(margin).replace(/,/g, '').trim(),
@@ -120,9 +128,10 @@ async function fetchOpenCity(): Promise<Result[]> {
     if (!data.success) return [];
     const out: Result[] = [];
     for (const rec of data.result?.records ?? []) {
-      const id = mapConst(rec.constituency_name ?? '');
+      const raw = rec.constituency_name ?? '';
+      const id = mapConst(raw) ?? slugify(raw);
       if (!id || !rec.winner_candidate) continue;
-      out.push(makeResult(id, rec.party_name ?? '', rec.winner_candidate, rec.margin ?? 'N/A', rec.result_status ?? 'Declared'));
+      out.push(makeResult(id, raw, rec.party_name ?? '', rec.winner_candidate, rec.margin ?? 'N/A', rec.result_status ?? 'Declared'));
     }
     return out;
   } catch { return []; }
@@ -136,10 +145,11 @@ async function fetchNDTV(): Promise<Result[]> {
     const data = await r.json() as any;
     const out: Result[] = [];
     for (const item of (data.constituencies ?? data.results ?? [])) {
-      const id = mapConst(item.name ?? item.constituency ?? '');
+      const raw = item.name ?? item.constituency ?? '';
+      const id = mapConst(raw) ?? slugify(raw);
       if (!id) continue;
       out.push(makeResult(
-        id,
+        id, raw,
         item.leading_party ?? item.party ?? '',
         item.leading_candidate ?? item.candidate ?? '',
         item.margin ?? 'N/A',
@@ -159,20 +169,21 @@ async function fetchTNUpdates(): Promise<Result[]> {
     const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
     const out: Result[] = [];
     for (const row of rows) {
-      // Skip header rows (th cells)
       if (/<th/i.test(row)) continue;
       const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
         .map(td => td.replace(/<[^>]+>/g, ' ').replace(/—/g, '').replace(/\s+/g, ' ').trim());
       if (cells.length < 3) continue;
-      // columns: #, Constituency, Leading, Winner
-      const id = mapConst(cells[1] ?? '');
-      if (!id) continue;
-      // Prefer declared winner (col 3), fall back to leading (col 2)
+      // columns: #, Constituency Name, Leading, Winner
+      const rawName = cells[1]?.trim() ?? '';
+      if (!rawName || /^\d+$/.test(rawName)) continue; // skip empty or number-only cells
+      // Use CONSTITUENCY_MAP if available (for ID consistency with hardcoded frontend data),
+      // otherwise slugify the raw name
+      const id = mapConst(rawName) ?? slugify(rawName);
       const winner = cells[3] || '';
       const leading = cells[2] || '';
       const party = winner || leading;
       if (!party) continue;
-      out.push(makeResult(id, party, '', 'N/A', winner ? 'Declared' : 'Leading'));
+      out.push(makeResult(id, rawName, party, '', 'N/A', winner ? 'Declared' : 'Leading'));
     }
     return out;
   } catch { return []; }
@@ -186,9 +197,10 @@ async function fetchHindu(): Promise<Result[]> {
     const data = await r.json() as any;
     const out: Result[] = [];
     for (const item of (data.data ?? [])) {
-      const id = mapConst(item.constituency_name ?? '');
+      const raw = item.constituency_name ?? '';
+      const id = mapConst(raw) ?? slugify(raw);
       if (!id) continue;
-      out.push(makeResult(id, item.party_name ?? '', item.candidate_name ?? '', item.vote_margin ?? 'N/A'));
+      out.push(makeResult(id, raw, item.party_name ?? '', item.candidate_name ?? '', item.vote_margin ?? 'N/A'));
     }
     return out;
   } catch { return []; }
@@ -201,9 +213,10 @@ function parseEciHtml(html: string): Result[] {
     const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
       .map(td => td.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim());
     if (cells.length < 4) continue;
-    const id = mapConst(cells[0]);
+    const raw = cells[0];
+    const id = mapConst(raw) ?? slugify(raw);
     if (!id) continue;
-    out.push(makeResult(id, cells[2] ?? '', cells[1] ?? '', cells[4] ?? cells[3] ?? 'N/A', cells[cells.length - 1] ?? 'Leading'));
+    out.push(makeResult(id, raw, cells[2] ?? '', cells[1] ?? '', cells[4] ?? cells[3] ?? 'N/A', cells[cells.length - 1] ?? 'Leading'));
   }
   return out;
 }

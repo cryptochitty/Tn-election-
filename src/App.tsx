@@ -528,11 +528,14 @@ export default function App() {
   // Live results polling — hits Vercel serverless function every 60s, merges declared results into stateData
   useEffect(() => {
     const RENDER_API = '/api/tn-results';
-    const applyResults = (apiResults: {id: string; winner: string; winnerCandidate: string; actualMargin: string; predictionCorrect: boolean | null}[]) => {
+    const applyResults = (apiResults: {id: string; name?: string; winner: string; winnerCandidate: string; actualMargin: string; predictionCorrect: boolean | null}[]) => {
       if (!apiResults.length) return;
       setStateData(prev => {
-        if (!prev.constituencies) return prev;
-        const updated = prev.constituencies.map(c => {
+        const existing = prev.constituencies ?? [];
+        const existingIds = new Set(existing.map(c => c.id));
+
+        // Update existing constituencies with actual results
+        const updated = existing.map(c => {
           const hit = apiResults.find(r => r.id === c.id);
           if (!hit) return c;
           const predictionCorrect = hit.predictionCorrect !== null
@@ -540,7 +543,26 @@ export default function App() {
             : hit.winner === c.leading;
           return { ...c, result: { winner: hit.winner, winnerCandidate: hit.winnerCandidate, actualMargin: hit.actualMargin, predictionCorrect } };
         });
-        return { ...prev, constituencies: updated };
+
+        // Add constituencies from API that aren't already in the list
+        const newConsts = apiResults
+          .filter(r => !existingIds.has(r.id) && r.winner)
+          .map(r => ({
+            id: r.id,
+            name: r.name ?? r.id,
+            type: 'Safe' as const,
+            leading: r.winner,
+            margin: r.actualMargin !== 'N/A' ? r.actualMargin : 'N/A',
+            candidate: r.winnerCandidate || '',
+            result: {
+              winner: r.winner,
+              winnerCandidate: r.winnerCandidate,
+              actualMargin: r.actualMargin,
+              predictionCorrect: null as unknown as boolean,
+            },
+          }));
+
+        return { ...prev, constituencies: [...updated, ...newConsts] };
       });
       setLiveResultsStatus('live');
     };
