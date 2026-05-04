@@ -526,6 +526,7 @@ export default function App() {
   const [liveResultsStatus, setLiveResultsStatus] = useState<'idle' | 'live' | 'error'>('idle');
   const [liveSource, setLiveSource] = useState<string | null>(null);
   const [liveUpdatedAt, setLiveUpdatedAt] = useState<Date | null>(null);
+  const [liveSourceTime, setLiveSourceTime] = useState<string | null>(null);
 
   // Live results polling — hits Vercel serverless function every 60s, merges declared results into stateData
   useEffect(() => {
@@ -578,6 +579,7 @@ export default function App() {
           applyResults(json.results);
           setLiveSource(json.source ?? null);
           setLiveUpdatedAt(new Date());
+          setLiveSourceTime(json.sourceUpdatedAt ?? null);
         }
       } catch {
         setLiveResultsStatus('error');
@@ -1516,8 +1518,11 @@ export default function App() {
                         {liveSource && (
                           <span>Source: <span className="text-brand-text/60 font-semibold">{liveSource}</span></span>
                         )}
+                        {liveSourceTime && (
+                          <span>Data as of: <span className="text-brand-text/60 font-semibold">{liveSourceTime}</span></span>
+                        )}
                         {liveUpdatedAt && (
-                          <span>Updated: <span className="text-brand-text/60 font-semibold">
+                          <span>Fetched: <span className="text-brand-text/60 font-semibold">
                             {liveUpdatedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </span></span>
                         )}

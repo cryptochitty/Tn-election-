@@ -160,12 +160,19 @@ async function fetchNDTV(): Promise<Result[]> {
   } catch { return []; }
 }
 
+let tnUpdatesSourceTime: string | null = null;
+
 async function fetchTNUpdates(): Promise<Result[]> {
   try {
     const url = 'https://tnupdates.com/tn-assembly-elections-winners-2026/';
     const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
     if (!r.ok) return [];
     const html = await r.text();
+
+    // Extract the "Last Updated: HH:MM AM/PM" timestamp from the page
+    const timeMatch = html.match(/last\s+updated[:\s]+([0-9]{1,2}:[0-9]{2}\s*[ap]m)/i);
+    tnUpdatesSourceTime = timeMatch ? timeMatch[1].trim() : null;
+
     const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? [];
     const out: Result[] = [];
     for (const row of rows) {
@@ -173,14 +180,10 @@ async function fetchTNUpdates(): Promise<Result[]> {
       const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/gi) ?? [])
         .map(td => td.replace(/<[^>]+>/g, ' ').replace(/—/g, '').replace(/\s+/g, ' ').trim());
       if (cells.length < 3) continue;
-      // columns: #, Constituency Name, Leading, Winner
       const rawName = cells[1]?.trim() ?? '';
-      if (!rawName || /^\d+$/.test(rawName)) continue; // skip empty or number-only cells
-      // Use CONSTITUENCY_MAP if available (for ID consistency with hardcoded frontend data),
-      // otherwise slugify the raw name
+      if (!rawName || /^\d+$/.test(rawName)) continue;
       const id = mapConst(rawName) ?? slugify(rawName);
-      // Only use declared winners (col 3). Leading trends (col 2) are unreliable
-      // and cause inflated seat counts that don't match ECI declared results.
+      // Only use declared winners (col 3) — leading trends inflate numbers vs ECI
       const winner = cells[3]?.trim() || '';
       if (!winner) continue;
       out.push(makeResult(id, rawName, winner, '', 'N/A', 'Declared'));
@@ -288,7 +291,8 @@ export default async function handler(req: any, res: any) {
   for (const [name, fn] of sources) {
     const results = await fn();
     if (results.length) {
-      return res.json({ ok: true, results, source: name, count: results.length });
+      const sourceUpdatedAt = name === 'TNUpdates' ? tnUpdatesSourceTime : null;
+      return res.json({ ok: true, results, source: name, count: results.length, sourceUpdatedAt });
     }
   }
 
