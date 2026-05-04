@@ -780,6 +780,25 @@ export default function App() {
     });
   }, [stateConstituencies, deepDiveRegion, searchTerm]);
 
+  // Live party tally — computed from actual results in constituencies
+  const PARTY_COLORS: Record<string, string> = {
+    DMK: '#3b82f6', AIADMK: '#ef4444', TVK: '#f59e0b',
+    NTK: '#6b7280', BJP: '#f97316', INC: '#22c55e', IND: '#9ca3af',
+  };
+
+  const liveTally = useMemo(() => {
+    const tally: Record<string, number> = {};
+    for (const c of stateData.constituencies ?? []) {
+      const w = c.result?.winner;
+      if (w) tally[w] = (tally[w] ?? 0) + 1;
+    }
+    return Object.entries(tally)
+      .sort(([, a], [, b]) => b - a)
+      .map(([party, seats]) => ({ party, seats, color: PARTY_COLORS[party] ?? '#9ca3af' }));
+  }, [stateData.constituencies]);
+
+  const totalDeclared = liveTally.reduce((s, p) => s + p.seats, 0);
+
   const regionLeader = useMemo(() => {
     if (!stateData) return leadingParty;
     if (activeRegion === 'all') return leadingParty;
@@ -1473,6 +1492,67 @@ export default function App() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
+                {/* Live Party-wise Tally */}
+                {totalDeclared > 0 && (
+                  <div className="mb-10 bg-white border border-brand-text/5 p-6 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-wider">Live Results</span>
+                      </div>
+                      <span className="text-[10px] text-brand-text/40 uppercase tracking-widest">
+                        {totalDeclared} / {stateData.totalSeats} Declared · Majority {stateData.majority}
+                      </span>
+                    </div>
+
+                    {/* Progress bar across all parties */}
+                    <div className="relative h-3 bg-brand-text/5 rounded-full mb-6 overflow-hidden flex">
+                      {liveTally.map(p => (
+                        <motion.div
+                          key={p.party}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(p.seats / stateData.totalSeats) * 100}%` }}
+                          transition={{ duration: 0.8, ease: 'circOut' }}
+                          style={{ backgroundColor: p.color }}
+                          className="h-full"
+                        />
+                      ))}
+                      {/* Majority marker */}
+                      <div
+                        className="absolute top-0 bottom-0 w-px bg-brand-text/40"
+                        style={{ left: `${(stateData.majority / stateData.totalSeats) * 100}%` }}
+                      >
+                        <span className="absolute -top-5 -translate-x-1/2 text-[9px] text-brand-text/50 uppercase tracking-widest whitespace-nowrap">maj</span>
+                      </div>
+                    </div>
+
+                    {/* Party rows */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {liveTally.map((p, i) => (
+                        <motion.div
+                          key={p.party}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="flex items-center gap-3 p-3 border border-brand-text/5 bg-brand-text/[0.02]"
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                          <div className="min-w-0">
+                            <span className="text-[10px] uppercase tracking-widest text-brand-text/50 block truncate">{p.party}</span>
+                            <span className="text-xl font-serif italic leading-tight">{p.seats}</span>
+                          </div>
+                          {p.seats >= stateData.majority && (
+                            <span className="ml-auto text-[8px] uppercase tracking-widest text-green-600 font-bold">Majority</span>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <header className="mb-12">
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
